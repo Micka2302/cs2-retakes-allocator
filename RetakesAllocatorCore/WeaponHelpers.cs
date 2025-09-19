@@ -72,8 +72,6 @@ public static class WeaponHelpers
         CsItem.XM1014,
         CsItem.Nova,
 
-        // Sniper
-        CsItem.Scout,
     };
 
     private static readonly ICollection<CsItem> _tMidRange = new HashSet<CsItem>
@@ -118,6 +116,7 @@ public static class WeaponHelpers
     private static readonly ICollection<CsItem> _sharedPreferred = new HashSet<CsItem>
     {
         CsItem.AWP,
+        CsItem.Scout,
     };
 
     private static readonly ICollection<CsItem> _tPreferred = new HashSet<CsItem>
@@ -412,14 +411,14 @@ public static class WeaponHelpers
             return null;
         }
 
-        if (item == CsItem.AWP)
+        return item switch
         {
-            return item;
-        }
-
-        // Right now these are the only other preferred guns
-        // If we make preferred guns configurable, we'll have to change this
-        return team == CsTeam.Terrorist ? CsItem.AutoSniperT : CsItem.AutoSniperCT;
+            CsItem.AWP => item,
+            CsItem.Scout => item,
+            CsItem.AutoSniperT => team == CsTeam.Terrorist ? CsItem.AutoSniperT : CsItem.AutoSniperCT,
+            CsItem.AutoSniperCT => team == CsTeam.Terrorist ? CsItem.AutoSniperT : CsItem.AutoSniperCT,
+            _ => null,
+        };
     }
 
     public static ICollection<RoundType> GetRoundTypesForWeapon(CsItem weapon)
