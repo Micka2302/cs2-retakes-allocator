@@ -135,6 +135,18 @@ public static class WeaponHelpers
     private static readonly ICollection<CsItem> _allPreferred =
         _preferredForT.Concat(_preferredForCt).ToHashSet();
 
+    private static readonly ICollection<CsItem> _awpAndAutoPreferred = new HashSet<CsItem>
+    {
+        CsItem.AWP,
+        CsItem.AutoSniperT,
+        CsItem.AutoSniperCT,
+    };
+
+    private static readonly ICollection<CsItem> _ssgPreferredWeapons = new HashSet<CsItem>
+    {
+        CsItem.Scout,
+    };
+
     private static readonly ICollection<CsItem> _heavys = new HashSet<CsItem>
     {
         CsItem.M249,
@@ -340,16 +352,62 @@ public static class WeaponHelpers
         };
     }
 
+    public static bool IsAwpOrAutoSniperPreference(CsItem weapon)
+    {
+        return _awpAndAutoPreferred.Contains(weapon);
+    }
+
+    public static bool IsSsgPreference(CsItem weapon)
+    {
+        return _ssgPreferredWeapons.Contains(weapon);
+    }
+
     public static IList<T> SelectPreferredPlayers<T>(IEnumerable<T> players, Func<T, bool> isVip, CsTeam team)
     {
-        if (Configs.GetConfigData().AllowAwpWeaponForEveryone)
-        {
-            return new List<T>(players);
-        }
+        var config = Configs.GetConfigData();
+        return SelectPreferredPlayersCore(
+            players,
+            isVip,
+            team,
+            config.AllowAwpWeaponForEveryone,
+            config.MaxAwpWeaponsPerTeam,
+            config.MinPlayersPerTeamForAwpWeapon,
+            config.NumberOfExtraVipChancesForAwpWeapon
+        );
+    }
 
+    public static IList<T> SelectPreferredSsgPlayers<T>(IEnumerable<T> players, Func<T, bool> isVip, CsTeam team)
+    {
+        var config = Configs.GetConfigData();
+        return SelectPreferredPlayersCore(
+            players,
+            isVip,
+            team,
+            config.AllowSsgWeaponForEveryone,
+            config.MaxSsgWeaponsPerTeam,
+            config.MinPlayersPerTeamForSsgWeapon,
+            config.NumberOfExtraVipChancesForSsgWeapon
+        );
+    }
+
+    private static IList<T> SelectPreferredPlayersCore<T>(
+        IEnumerable<T> players,
+        Func<T, bool> isVip,
+        CsTeam team,
+        bool allowForEveryone,
+        IDictionary<CsTeam, int> maxWeaponsPerTeam,
+        IDictionary<CsTeam, int> minPlayersPerTeam,
+        int numberOfExtraVipChances
+    )
+    {
         var playersList = players.ToList();
 
-        if (Configs.GetConfigData().MinPlayersPerTeamForAwpWeapon.TryGetValue(team, out var minTeamPlayers))
+        if (allowForEveryone)
+        {
+            return new List<T>(playersList);
+        }
+
+        if (minPlayersPerTeam.TryGetValue(team, out var minTeamPlayers))
         {
             if (playersList.Count < minTeamPlayers)
             {
@@ -357,7 +415,7 @@ public static class WeaponHelpers
             }
         }
 
-        if (!Configs.GetConfigData().MaxAwpWeaponsPerTeam.TryGetValue(team, out var maxPerTeam))
+        if (!maxWeaponsPerTeam.TryGetValue(team, out var maxPerTeam))
         {
             maxPerTeam = 1;
         }
@@ -370,7 +428,7 @@ public static class WeaponHelpers
         var choicePlayers = new List<T>();
         foreach (var p in playersList)
         {
-            if (Configs.GetConfigData().NumberOfExtraVipChancesForAwpWeapon == -1)
+            if (numberOfExtraVipChances == -1)
             {
                 if (isVip(p))
                 {
@@ -382,7 +440,7 @@ public static class WeaponHelpers
                 choicePlayers.Add(p);
                 if (isVip(p))
                 {
-                    for (var i = 0; i < Configs.GetConfigData().NumberOfExtraVipChancesForAwpWeapon; i++)
+                    for (var i = 0; i < numberOfExtraVipChances; i++)
                     {
                         choicePlayers.Add(p);
                     }

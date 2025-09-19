@@ -227,4 +227,86 @@ public class WeaponSelectionTests : BaseTestFixture
         Assert.That(numHalfBuy, Is.InRange(20, 80));
         Assert.That(numFullBuy, Is.InRange(850, 950));
     }
+
+    [Test]
+    public async Task SsgChanceDisablesDistributionWhenZero()
+    {
+        var (allocations, roundType) = await RunSsgRoundAsync(new ConfigData
+        {
+            ChanceForAwpWeapon = 0,
+            ChanceForSsgWeapon = 0,
+        });
+
+        Assert.That(roundType, Is.EqualTo(RoundType.FullBuy));
+        Assert.That(allocations.ContainsKey(1), Is.True);
+        Assert.That(allocations.ContainsKey(2), Is.True);
+        Assert.That(allocations[1], Does.Not.Contain(CsItem.Scout));
+        Assert.That(allocations[2], Does.Not.Contain(CsItem.Scout));
+    }
+
+    [Test]
+    public async Task SsgChanceEnablesDistributionWhenConfigured()
+    {
+        var (allocations, _) = await RunSsgRoundAsync(new ConfigData
+        {
+            ChanceForAwpWeapon = 0,
+            ChanceForSsgWeapon = 100,
+        });
+
+        Assert.That(allocations[1], Does.Contain(CsItem.Scout));
+        Assert.That(allocations[2], Does.Contain(CsItem.Scout));
+    }
+
+    [Test]
+    public async Task SsgRespectsPerTeamLimits()
+    {
+        var (allocations, _) = await RunSsgRoundAsync(new ConfigData
+        {
+            ChanceForAwpWeapon = 0,
+            ChanceForSsgWeapon = 100,
+            MaxSsgWeaponsPerTeam = new()
+            {
+                {CsTeam.Terrorist, 0},
+                {CsTeam.CounterTerrorist, 0},
+            },
+        });
+
+        Assert.That(allocations[1], Does.Not.Contain(CsItem.Scout));
+        Assert.That(allocations[2], Does.Not.Contain(CsItem.Scout));
+    }
+
+    private async Task<(Dictionary<int, List<CsItem>> allocations, RoundType roundType)> RunSsgRoundAsync(
+        ConfigData configData
+    )
+    {
+        Configs.OverrideConfigDataForTests(configData);
+        RoundTypeManager.Instance.Initialize();
+        RoundTypeManager.Instance.SetNextRoundTypeOverride(RoundType.FullBuy);
+
+        var players = new List<int> {1, 2};
+        await Queries.SetWeaponPreferenceForUserAsync(1, CsTeam.Terrorist, WeaponAllocationType.Preferred,
+            CsItem.Scout);
+        await Queries.SetWeaponPreferenceForUserAsync(2, CsTeam.CounterTerrorist, WeaponAllocationType.Preferred,
+            CsItem.Scout);
+
+        var allocations = new Dictionary<int, List<CsItem>>();
+        try
+        {
+            OnRoundPostStartHelper.Handle(
+                players,
+                p => (ulong)p,
+                p => p == 1 ? CsTeam.Terrorist : CsTeam.CounterTerrorist,
+                _ => { },
+                (player, items, _) => { allocations[player] = new List<CsItem>(items); },
+                _ => false,
+                out var roundType
+            );
+
+            return (allocations, roundType);
+        }
+        finally
+        {
+            RoundTypeManager.Instance.SetNextRoundTypeOverride(null);
+        }
+    }
 }

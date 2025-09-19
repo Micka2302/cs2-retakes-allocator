@@ -51,26 +51,46 @@ public class OnRoundPostStartHelper
 
         var defusingPlayer = Utils.Choice(ctPlayers);
 
-        HashSet<T> FilterByAwpWeaponPreference(IEnumerable<T> ps) =>
+        HashSet<T> FilterPreferredPlayers(IEnumerable<T> ps, Func<CsItem, bool> preferenceFilter) =>
             ps.Where(p =>
                     userSettingsByPlayerId.TryGetValue(getSteamId(p), out var userSetting) &&
-                    userSetting.GetWeaponPreference(getTeam(p), WeaponAllocationType.Preferred) is not null)
+                    userSetting.GetWeaponPreference(getTeam(p), WeaponAllocationType.Preferred) is { } preferredWeapon &&
+                    preferenceFilter(preferredWeapon))
                 .ToHashSet();
 
-        ICollection<T> tPreferredPlayers = new List<T>();
-        ICollection<T> ctPreferredPlayers = new List<T>();
+        var tPreferredPlayers = new HashSet<T>();
+        var ctPreferredPlayers = new HashSet<T>();
 
-        Random random = new Random();
-        double generatedChance = random.NextDouble() * 100;
-
-        if (roundType == RoundType.FullBuy && generatedChance <= Configs.GetConfigData().ChanceForAwpWeapon)
+        if (roundType == RoundType.FullBuy)
         {
-            tPreferredPlayers =
-                WeaponHelpers.SelectPreferredPlayers(FilterByAwpWeaponPreference(tPlayers), isVip,
-                    CsTeam.Terrorist);
-            ctPreferredPlayers =
-                WeaponHelpers.SelectPreferredPlayers(FilterByAwpWeaponPreference(ctPlayers), isVip,
-                    CsTeam.CounterTerrorist);
+            var config = Configs.GetConfigData();
+            var random = new Random();
+
+            if (random.NextDouble() * 100 <= config.ChanceForAwpWeapon)
+            {
+                var tAwpEligible = FilterPreferredPlayers(tPlayers, WeaponHelpers.IsAwpOrAutoSniperPreference);
+                var ctAwpEligible = FilterPreferredPlayers(ctPlayers, WeaponHelpers.IsAwpOrAutoSniperPreference);
+
+                tPreferredPlayers.UnionWith(
+                    WeaponHelpers.SelectPreferredPlayers(tAwpEligible, isVip, CsTeam.Terrorist)
+                );
+                ctPreferredPlayers.UnionWith(
+                    WeaponHelpers.SelectPreferredPlayers(ctAwpEligible, isVip, CsTeam.CounterTerrorist)
+                );
+            }
+
+            if (random.NextDouble() * 100 <= config.ChanceForSsgWeapon)
+            {
+                var tSsgEligible = FilterPreferredPlayers(tPlayers, WeaponHelpers.IsSsgPreference);
+                var ctSsgEligible = FilterPreferredPlayers(ctPlayers, WeaponHelpers.IsSsgPreference);
+
+                tPreferredPlayers.UnionWith(
+                    WeaponHelpers.SelectPreferredSsgPlayers(tSsgEligible, isVip, CsTeam.Terrorist)
+                );
+                ctPreferredPlayers.UnionWith(
+                    WeaponHelpers.SelectPreferredSsgPlayers(ctSsgEligible, isVip, CsTeam.CounterTerrorist)
+                );
+            }
         }
 
         var nadesByPlayer = new Dictionary<T, ICollection<CsItem>>();
