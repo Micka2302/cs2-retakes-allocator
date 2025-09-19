@@ -247,7 +247,12 @@ public record ConfigData
     public int NumberOfExtraVipChancesForAwpWeapon { get; set; } = 1;
     public bool AllowAwpWeaponForEveryone { get; set; } = false;
 
+    public int NumberOfExtraVipChancesForSsgWeapon { get; set; } = 1;
+    public bool AllowSsgWeaponForEveryone { get; set; } = false;
+
     public double ChanceForAwpWeapon { get; set; } = 100;
+
+    public double ChanceForSsgWeapon { get; set; } = 100;
 
     public Dictionary<CsTeam, int> MaxAwpWeaponsPerTeam { get; set; } = new()
     {
@@ -255,7 +260,19 @@ public record ConfigData
         {CsTeam.CounterTerrorist, 1},
     };
 
+    public Dictionary<CsTeam, int> MaxSsgWeaponsPerTeam { get; set; } = new()
+    {
+        {CsTeam.Terrorist, 1},
+        {CsTeam.CounterTerrorist, 1},
+    };
+
     public Dictionary<CsTeam, int> MinPlayersPerTeamForAwpWeapon { get; set; } = new()
+    {
+        {CsTeam.Terrorist, 1},
+        {CsTeam.CounterTerrorist, 1},
+    };
+
+    public Dictionary<CsTeam, int> MinPlayersPerTeamForSsgWeapon { get; set; } = new()
     {
         {CsTeam.Terrorist, 1},
         {CsTeam.CounterTerrorist, 1},

@@ -74,11 +74,21 @@ There are a few different ways to set weapon preferences:
 
 See more info below about the commands in the "Commands" section.
 
+Preferred weapons include AWPs, auto-snipers and the SSG (Scout). You can select the SSG as your preferred sniper via
+the same commands (for example `!gun weapon_ssg08`), and the distribution of those snipers can be configured
+independently from the AWP queue.
+
 #### AWP Queue
 
 Currently one AWPer will be selected per team as long as at least one person on the team has chosen to get an AWP. AWP
 queue features will be expanded over time, you can take a look at existing Github Issues to see what has been proposed
 so far.
+
+#### SSG Queue
+
+Players who prefer the SSG (Scout) can also enter a dedicated queue. On full buy rounds the plugin will independently
+roll for SSG availability, apply the SSG-specific limits and then merge the resulting list with any AWP picks before
+weapons are allocated. See the configuration section below for the options that control the SSG queue.
 
 ### Buy Menu
 
@@ -172,9 +182,13 @@ Here are the weapon configs:
 - `ZeusPreference`: Whether or not to give a Zeus. Options are `Always` or `Never`. Defaults to `Never`.
 - `AllowAwpWeaponForEveryone`: If `true`, everyone can get the AWP. This overrides every other "preferred" weapon
   setting. Defaults to `false`.
+- `AllowSsgWeaponForEveryone`: If `true`, everyone with an SSG preference can receive one. Defaults to `false`.
 - `MaxAwpWeaponsPerTeam`: The maximum number of AWPs for each team.
+- `MaxSsgWeaponsPerTeam`: The maximum number of SSGs for each team.
 - `MinPlayersPerTeamForAwpWeapon`: The minimum number of players on each team necessary for someone to get an AWP.
+- `MinPlayersPerTeamForSsgWeapon`: The minimum number of players on each team necessary for someone to get an SSG.
 - `ChanceForAwpWeapon`: The % chance that the round will have an AWP.
+- `ChanceForSsgWeapon`: The % chance that the round will have an SSG.
 
 #### Nade Configuration
 
@@ -278,6 +292,10 @@ room for it*.
     - If you set this to 0, there will be no preference for VIPs.
     - If you set this to -1, only VIPs can get the AWP
 - `ChanceForAwpWeapon`: This allows you to determine chance of players getting the AWP. (ie. 100 = %100, 50 = %50)
+- `NumberOfExtraVipChancesForSsgWeapon`: When randomly selecting SSGs per team, how many extra chances VIPs get.
+    - The behaviour matches the AWP queue. `1` gives VIPs an extra entry, `0` removes the bonus and `-1` restricts SSGs
+      to VIPs.
+- `ChanceForSsgWeapon`: This allows you to determine the chance of players getting the SSG. (ie. 100 = %100, 50 = %50)
 - `AllowedWeaponSelectionTypes`: The types of weapon allocation that are allowed.
     - Choices:
         - `PlayerChoice` - Allow players to choose their preferences for the round type
