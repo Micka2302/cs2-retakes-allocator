@@ -373,20 +373,20 @@ public class GunsMenu : AbstractBaseMenu
         ]);
         HandlePreferenceSelection(player, CsTeam.CounterTerrorist, weaponName);
 
-        OpenGiveAwpMenu(player);
+        OpenGiveScoutMenu(player);
     }
 
-    private string AwpNeverOption => Translator.Instance["guns_menu.awp_never"];
-    private string AwpMyTurnOption => Translator.Instance["guns_menu.awp_always"];
+    private string ScoutNeverOption => Translator.Instance["guns_menu.awp_never"];
+    private string ScoutMyTurnOption => Translator.Instance["guns_menu.awp_always"];
 
-    private void OpenGiveAwpMenu(CCSPlayerController player)
+    private void OpenGiveScoutMenu(CCSPlayerController player)
     {
         var menu = new ChatMenu($"{MessagePrefix}{Translator.Instance["guns_menu.awp_menu"]}");
 
-        menu.AddMenuOption(AwpNeverOption, OnGiveAwpSelect);
-        // Implementing "Sometimes" will require a more complex AWP queue
-        // menu.AddMenuOption("Sometimes", OnGiveAwpSelect);
-        menu.AddMenuOption(AwpMyTurnOption, OnGiveAwpSelect);
+        menu.AddMenuOption(ScoutNeverOption, OnGiveScoutSelect);
+        // Implementing "Sometimes" will require a more complex SSG08 queue
+        // menu.AddMenuOption("Sometimes", OnGiveScoutSelect);
+        menu.AddMenuOption(ScoutMyTurnOption, OnGiveScoutSelect);
 
         menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
@@ -394,7 +394,7 @@ public class GunsMenu : AbstractBaseMenu
         CreateMenuTimeoutTimer(player);
     }
 
-    private void OnGiveAwpSelect(CCSPlayerController player, ChatMenuOption option)
+    private void OnGiveScoutSelect(CCSPlayerController player, ChatMenuOption option)
     {
         if (!PlayersInMenu.Contains(player))
         {
@@ -406,14 +406,14 @@ public class GunsMenu : AbstractBaseMenu
             Translator.Instance["guns_menu.awp_preference_selected", option.Text]
         );
 
-        if (option.Text == AwpNeverOption)
+        if (option.Text == ScoutNeverOption)
         {
-            // Team doesnt matter for AWP
-            HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.AWP.ToString(), remove: true);
+            // Team doesnt matter for preferred sniper
+            HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.Scout.ToString(), remove: true);
         }
-        else if (option.Text == AwpMyTurnOption)
+        else if (option.Text == ScoutMyTurnOption)
         {
-            HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.AWP.ToString(), remove: false);
+            HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.Scout.ToString(), remove: false);
         }
 
         OnMenuComplete(player);

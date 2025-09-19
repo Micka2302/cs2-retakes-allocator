@@ -79,8 +79,8 @@ public class WeaponSelectionTests : BaseTestFixture
     [TestCase(null, CsTeam.Terrorist, "ak", null, "AK47' is now", "AK47' is no longer")]
     [TestCase(RoundType.FullBuy, CsTeam.Spectator, "ak", null, "must join a team", "must join a team")]
     [TestCase(RoundType.FullBuy, CsTeam.Terrorist, "ak,F", null, "Invalid team", "Invalid team")]
-    [TestCase(RoundType.FullBuy, CsTeam.Terrorist, "awp", null, "will now get a 'AWP", "no longer receive 'AWP")]
-    [TestCase(RoundType.Pistol, CsTeam.CounterTerrorist, "awp", null, "will now get a 'AWP", "no longer receive 'AWP")]
+    [TestCase(RoundType.FullBuy, CsTeam.Terrorist, "awp", null, "will now get a 'SSG08", "no longer receive 'SSG08")]
+    [TestCase(RoundType.Pistol, CsTeam.CounterTerrorist, "awp", null, "will now get a 'SSG08", "no longer receive 'SSG08")]
     public async Task SetWeaponPreferenceCommandSingleArg(
         RoundType? roundType,
         CsTeam team,

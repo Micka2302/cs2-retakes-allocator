@@ -41,14 +41,14 @@
   "guns_menu.complete": "You have finished setting up your weapons!\nThe weapons you have selected will be given to you at the start of the next round!",
   "guns_menu.select_weapon": "Select a {0} {1} Weapon",
   "guns_menu.weapon_selected": "You selected {0} as {1} {2} weapon!",
-  "guns_menu.awp_menu": "Select when to give the AWP",
+  "guns_menu.awp_menu": "Select when to give the SSG08",
   "guns_menu.awp_always": "Always",
   "guns_menu.awp_never": "Never",
-  "guns_menu.awp_preference_selected": "You selected '{0}' as when to give the AWP!",
+  "guns_menu.awp_preference_selected": "You selected '{0}' as when to give the SSG08!",
 
   "menu.main.tloadout": "█░ T Loadout ░█",
   "menu.main.ctloadout": "█░ CT Loadout ░█",
-  "menu.main.awp": "█░ AWP ░█",
+  "menu.main.awp": "█░ SSG08 ░█",
 
   "menu.tprimary": "█ T Primary █",
   "menu.tsecondary": "█ T Secondary █",

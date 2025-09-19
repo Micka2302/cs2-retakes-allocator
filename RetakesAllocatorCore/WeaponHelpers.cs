@@ -250,11 +250,16 @@ public static class WeaponHelpers
     {
         {"m4a1", CsItem.M4A1S},
         {"m4a1-s", CsItem.M4A1S},
+        {"awp", CsItem.Scout},
+        {"weapon_awp", CsItem.AWP},
+        {"ssg08", CsItem.Scout},
+        {"weapon_ssg08", CsItem.Scout},
     };
 
     private static readonly Dictionary<CsItem, string> _weaponNameOverrides = new()
     {
         {CsItem.M4A4, "M4A4"},
+        {CsItem.Scout, "SSG08"},
     };
 
     public static List<WeaponAllocationType> WeaponAllocationTypes =>

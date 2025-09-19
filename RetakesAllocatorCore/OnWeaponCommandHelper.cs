@@ -74,16 +74,17 @@ public class OnWeaponCommandHelper
         }
 
         var weapon = foundWeapons.First();
+        var weaponName = weapon.GetName();
 
         if (!WeaponHelpers.IsUsableWeapon(weapon))
         {
-            return Ret(Translator.Instance["weapon_preference.not_allowed", weapon]);
+            return Ret(Translator.Instance["weapon_preference.not_allowed", weaponName]);
         }
 
         var weaponRoundTypes = WeaponHelpers.GetRoundTypesForWeapon(weapon);
         if (weaponRoundTypes.Count == 0)
         {
-            return Ret(Translator.Instance["weapon_preference.invalid_weapon", weapon]);
+            return Ret(Translator.Instance["weapon_preference.invalid_weapon", weaponName]);
         }
 
         var allocationType = WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(
@@ -105,7 +106,7 @@ public class OnWeaponCommandHelper
 
         if (allocationType is null)
         {
-            return Ret(Translator.Instance["weapon_preference.not_valid_for_team", weapon, team]);
+            return Ret(Translator.Instance["weapon_preference.not_valid_for_team", weaponName, team]);
         }
 
 
@@ -114,13 +115,13 @@ public class OnWeaponCommandHelper
             if (isPreferred)
             {
                 _ = Queries.SetPreferredWeaponPreferenceAsync(userId, null);
-                return Ret(Translator.Instance["weapon_preference.unset_preference_preferred", weapon]);
+                return Ret(Translator.Instance["weapon_preference.unset_preference_preferred", weaponName]);
             }
             else
             {
                 _ = Queries.SetWeaponPreferenceForUserAsync(userId, team, allocationType.Value, null);
                 return Ret(
-                    Translator.Instance["weapon_preference.unset_preference", weapon, allocationType.Value, team]);
+                    Translator.Instance["weapon_preference.unset_preference", weaponName, allocationType.Value, team]);
             }
         }
 
@@ -129,12 +130,12 @@ public class OnWeaponCommandHelper
         {
             _ = Queries.SetPreferredWeaponPreferenceAsync(userId, weapon);
             // If we ever add more preferred weapons, we need to change the wording of "sniper" here
-            message = Translator.Instance["weapon_preference.set_preference_preferred", weapon];
+            message = Translator.Instance["weapon_preference.set_preference_preferred", weaponName];
         }
         else
         {
             _ = Queries.SetWeaponPreferenceForUserAsync(userId, team, allocationType.Value, weapon);
-            message = Translator.Instance["weapon_preference.set_preference", weapon, allocationType.Value, team];
+            message = Translator.Instance["weapon_preference.set_preference", weaponName, allocationType.Value, team];
         }
 
         if (allocateImmediately)

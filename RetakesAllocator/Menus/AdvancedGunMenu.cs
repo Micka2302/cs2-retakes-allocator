@@ -74,10 +74,10 @@ public class AdvancedGunMenu
                 string BottomMenu = string.IsNullOrEmpty(Translator.Instance["menu.bottom.text"]) ? "" : Translator.Instance["menu.bottom.text"];
                 string BottomMenuOnpistol = string.IsNullOrEmpty(Translator.Instance["menu.bottom.text.pistol"]) ? "" : Translator.Instance["menu.bottom.text.pistol"];
 
-                string[] Main = { 
-                    string.IsNullOrEmpty(Translator.Instance["menu.main.tloadout"]) ? "█░ T Loadout ░█" : Translator.Instance["menu.main.tloadout"], 
-                    string.IsNullOrEmpty(Translator.Instance["menu.main.ctloadout"]) ? "█░ CT Loadout ░█" : Translator.Instance["menu.main.ctloadout"], 
-                    string.IsNullOrEmpty(Translator.Instance["menu.main.awp"]) ? "█░ AWP ░█" : Translator.Instance["menu.main.awp"]
+                string[] Main = {
+                    string.IsNullOrEmpty(Translator.Instance["menu.main.tloadout"]) ? "█░ T Loadout ░█" : Translator.Instance["menu.main.tloadout"],
+                    string.IsNullOrEmpty(Translator.Instance["menu.main.ctloadout"]) ? "█░ CT Loadout ░█" : Translator.Instance["menu.main.ctloadout"],
+                    string.IsNullOrEmpty(Translator.Instance["menu.main.awp"]) ? "█░ SSG08 ░█" : Translator.Instance["menu.main.awp"]
                 };
 
                 List<string> TFullBuyList = new List<string>();
@@ -104,8 +104,8 @@ public class AdvancedGunMenu
                     string.IsNullOrEmpty(Translator.Instance["menu.ctHalfbuy"]) ? "█ CT Half Buy █" : Translator.Instance["menu.ctHalfbuy"]
                 };
 
-                string[] AWP = { 
-                    string.IsNullOrEmpty(Translator.Instance["menu.awp.always"]) ? "Always" : Translator.Instance["menu.awp.always"], 
+                string[] PreferredSniperOptions = {
+                    string.IsNullOrEmpty(Translator.Instance["menu.awp.always"]) ? "Always" : Translator.Instance["menu.awp.always"],
                     string.IsNullOrEmpty(Translator.Instance["menu.awp.never"]) ? "Never" : Translator.Instance["menu.awp.never"]
                 };
 
@@ -203,9 +203,9 @@ public class AdvancedGunMenu
                         currentIndexDict[playerid] = (currentIndexDict[playerid] == CTPistolRound.Length - 1) ? 0 : currentIndexDict[playerid] + 1;
                     }
 
-                    if (mainmenu[playerid] == 9)//AWP loadout
+                    if (mainmenu[playerid] == 9)//Preferred sniper loadout
                     {
-                        currentIndexDict[playerid] = (currentIndexDict[playerid] == AWP.Length - 1) ? 0 : currentIndexDict[playerid] + 1;
+                        currentIndexDict[playerid] = (currentIndexDict[playerid] == PreferredSniperOptions.Length - 1) ? 0 : currentIndexDict[playerid] + 1;
                     }
                     if (mainmenu[playerid] == 11)//CT Half Buy
                     {
@@ -260,9 +260,9 @@ public class AdvancedGunMenu
                         currentIndexDict[playerid] = (currentIndexDict[playerid] == 0) ? CTPistolRound.Length - 1 : currentIndexDict[playerid] - 1;
                     }
 
-                    if (mainmenu[playerid] == 9)//AWP loadout
+                    if (mainmenu[playerid] == 9)//Preferred sniper loadout
                     {
-                        currentIndexDict[playerid] = (currentIndexDict[playerid] == 0) ? AWP.Length - 1 : currentIndexDict[playerid] - 1;
+                        currentIndexDict[playerid] = (currentIndexDict[playerid] == 0) ? PreferredSniperOptions.Length - 1 : currentIndexDict[playerid] - 1;
                     }
                     if (mainmenu[playerid] == 11)//CT Half Buy
                     {
@@ -327,15 +327,15 @@ public class AdvancedGunMenu
 
                     if (mainmenu[playerid] == 9)
                     {
-                        string currentLineName = AWP[currentLineIndex];
-                        if (currentLineName == AWP[0])
+                        string currentLineName = PreferredSniperOptions[currentLineIndex];
+                        if (currentLineName == PreferredSniperOptions[0])
                         {
-                            GunsMenu.HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.AWP.ToString(), remove: false);
+                            GunsMenu.HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.Scout.ToString(), remove: false);
                             Print(player, Translator.Instance["guns_menu.awp_preference_selected",currentLineName]);
                         }
-                        if (currentLineName == AWP[1])
+                        if (currentLineName == PreferredSniperOptions[1])
                         {
-                            GunsMenu.HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.AWP.ToString(), remove: true);
+                            GunsMenu.HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.Scout.ToString(), remove: true);
                             Print(player, Translator.Instance["guns_menu.awp_preference_selected",currentLineName]);
                         }
                     }
@@ -551,16 +551,16 @@ public class AdvancedGunMenu
                     }
                     if(mainmenu[playerid] == 9)
                     {
-                        for (int i = 0; i < AWP.Length; i++)
+                        for (int i = 0; i < PreferredSniperOptions.Length; i++)
                         {
-                            if (i == currentIndexDict[playerid]) 
+                            if (i == currentIndexDict[playerid])
                             {
-                                string lineHtml = $"<font color='orange'>{Imageleft} {AWP[i]} {ImageRight}</font><br>";
+                                string lineHtml = $"<font color='orange'>{Imageleft} {PreferredSniperOptions[i]} {ImageRight}</font><br>";
                                 builder.AppendLine(lineHtml);
                             }
                             else
                             {
-                                builder.AppendLine($"<font color='white'>{AWP[i]}</font><br>");
+                                builder.AppendLine($"<font color='white'>{PreferredSniperOptions[i]}</font><br>");
                             }
                         }
                         builder.AppendLine(BottomMenu);

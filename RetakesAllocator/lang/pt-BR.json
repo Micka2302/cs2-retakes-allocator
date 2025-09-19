@@ -41,14 +41,14 @@
   "guns_menu.complete": "Você terminou de configurar suas armas!\nAs armas que você selecionou serão entregues a você no início da próximo round!",
   "guns_menu.select_weapon": "Selecione uma arma {0} {1}",
   "guns_menu.weapon_selected": "Você selecionou {0} como arma {1} {2}!",
-  "guns_menu.awp_menu": "Selecione quando receber a AWP",
+  "guns_menu.awp_menu": "Selecione quando receber a SSG08",
   "guns_menu.awp_always": "Sempre",
   "guns_menu.awp_never": "Nunca",
-  "guns_menu.awp_preference_selected": "Você selecionou '{0}' para receber a AWP!",
+  "guns_menu.awp_preference_selected": "Você selecionou '{0}' para receber a SSG08!",
 
   "menu.main.tloadout": "█ Loadout T █",
   "menu.main.ctloadout": "█ Loadout CT █",
-  "menu.main.awp": "█ AWP █",
+  "menu.main.awp": "█ SSG08 █",
 
   "menu.tprimary": "█ Primária T █",
   "menu.tsecondary": "█ Secundária T █",
