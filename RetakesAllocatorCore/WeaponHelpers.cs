@@ -342,14 +342,14 @@ public static class WeaponHelpers
 
     public static IList<T> SelectPreferredPlayers<T>(IEnumerable<T> players, Func<T, bool> isVip, CsTeam team)
     {
-        if (Configs.GetConfigData().AllowPreferredWeaponForEveryone)
+        if (Configs.GetConfigData().AllowAwpWeaponForEveryone)
         {
             return new List<T>(players);
         }
 
         var playersList = players.ToList();
 
-        if (Configs.GetConfigData().MinPlayersPerTeamForPreferredWeapon.TryGetValue(team, out var minTeamPlayers))
+        if (Configs.GetConfigData().MinPlayersPerTeamForAwpWeapon.TryGetValue(team, out var minTeamPlayers))
         {
             if (playersList.Count < minTeamPlayers)
             {
@@ -357,7 +357,7 @@ public static class WeaponHelpers
             }
         }
 
-        if (!Configs.GetConfigData().MaxPreferredWeaponsPerTeam.TryGetValue(team, out var maxPerTeam))
+        if (!Configs.GetConfigData().MaxAwpWeaponsPerTeam.TryGetValue(team, out var maxPerTeam))
         {
             maxPerTeam = 1;
         }
@@ -370,7 +370,7 @@ public static class WeaponHelpers
         var choicePlayers = new List<T>();
         foreach (var p in playersList)
         {
-            if (Configs.GetConfigData().NumberOfExtraVipChancesForPreferredWeapon == -1)
+            if (Configs.GetConfigData().NumberOfExtraVipChancesForAwpWeapon == -1)
             {
                 if (isVip(p))
                 {
@@ -382,7 +382,7 @@ public static class WeaponHelpers
                 choicePlayers.Add(p);
                 if (isVip(p))
                 {
-                    for (var i = 0; i < Configs.GetConfigData().NumberOfExtraVipChancesForPreferredWeapon; i++)
+                    for (var i = 0; i < Configs.GetConfigData().NumberOfExtraVipChancesForAwpWeapon; i++)
                     {
                         choicePlayers.Add(p);
                     }
@@ -558,8 +558,19 @@ public static class WeaponHelpers
             return new List<CsItem> {nameOverride};
         }
 
+        var needles = new HashSet<string> {needle};
+        const string weaponPrefix = "weapon_";
+        if (needle.StartsWith(weaponPrefix))
+        {
+            needles.Add(needle[weaponPrefix.Length..]);
+        }
+
         return Enum.GetNames<CsItem>()
-            .Where(name => name.ToLower().Contains(needle))
+            .Where(name =>
+            {
+                var lowered = name.ToLower();
+                return needles.Any(n => lowered.Contains(n));
+            })
             .Select(Enum.Parse<CsItem>)
             .ToList();
     }

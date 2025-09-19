@@ -22,14 +22,14 @@ public class DbTests : BaseTestFixture
         await Queries.SetWeaponPreferenceForUserAsync(TestSteamId, CsTeam.CounterTerrorist, WeaponAllocationType.FullBuyPrimary,
             CsItem.AK47);
         // Should set for both T and CT
-        await Queries.SetPreferredWeaponPreferenceAsync(TestSteamId, CsItem.AWP);
+        await Queries.SetAwpWeaponPreferenceAsync(TestSteamId, CsItem.AWP);
 
         await Queries.SetWeaponPreferenceForUserAsync(2, CsTeam.Terrorist, WeaponAllocationType.FullBuyPrimary, CsItem.AK47);
         await Queries.SetWeaponPreferenceForUserAsync(2, CsTeam.Terrorist, WeaponAllocationType.Secondary, CsItem.Deagle);
         await Queries.SetWeaponPreferenceForUserAsync(2, CsTeam.CounterTerrorist, WeaponAllocationType.Secondary,
             CsItem.FiveSeven);
         // Will get different snipers for different teams
-        await Queries.SetPreferredWeaponPreferenceAsync(2, CsItem.SCAR20);
+        await Queries.SetAwpWeaponPreferenceAsync(2, CsItem.SCAR20);
 
         usersSettings = Queries.GetUsersSettings(new List<ulong> {TestSteamId});
         Assert.Multiple(() =>

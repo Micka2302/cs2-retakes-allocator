@@ -113,7 +113,7 @@ public class OnWeaponCommandHelper
         {
             if (isPreferred)
             {
-                _ = Queries.SetPreferredWeaponPreferenceAsync(userId, null);
+                _ = Queries.SetAwpWeaponPreferenceAsync(userId, null);
                 return Ret(Translator.Instance["weapon_preference.unset_preference_preferred", weapon]);
             }
             else
@@ -127,7 +127,7 @@ public class OnWeaponCommandHelper
         string message;
         if (isPreferred)
         {
-            _ = Queries.SetPreferredWeaponPreferenceAsync(userId, weapon);
+            _ = Queries.SetAwpWeaponPreferenceAsync(userId, weapon);
             // If we ever add more preferred weapons, we need to change the wording of "sniper" here
             message = Translator.Instance["weapon_preference.set_preference_preferred", weapon];
         }

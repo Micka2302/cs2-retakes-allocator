@@ -51,7 +51,7 @@ public class OnRoundPostStartHelper
 
         var defusingPlayer = Utils.Choice(ctPlayers);
 
-        HashSet<T> FilterByPreferredWeaponPreference(IEnumerable<T> ps) =>
+        HashSet<T> FilterByAwpWeaponPreference(IEnumerable<T> ps) =>
             ps.Where(p =>
                     userSettingsByPlayerId.TryGetValue(getSteamId(p), out var userSetting) &&
                     userSetting.GetWeaponPreference(getTeam(p), WeaponAllocationType.Preferred) is not null)
@@ -63,13 +63,13 @@ public class OnRoundPostStartHelper
         Random random = new Random();
         double generatedChance = random.NextDouble() * 100;
 
-        if (roundType == RoundType.FullBuy && generatedChance <= Configs.GetConfigData().ChanceForPreferredWeapon)
+        if (roundType == RoundType.FullBuy && generatedChance <= Configs.GetConfigData().ChanceForAwpWeapon)
         {
             tPreferredPlayers =
-                WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(tPlayers), isVip,
+                WeaponHelpers.SelectPreferredPlayers(FilterByAwpWeaponPreference(tPlayers), isVip,
                     CsTeam.Terrorist);
             ctPreferredPlayers =
-                WeaponHelpers.SelectPreferredPlayers(FilterByPreferredWeaponPreference(ctPlayers), isVip,
+                WeaponHelpers.SelectPreferredPlayers(FilterByAwpWeaponPreference(ctPlayers), isVip,
                     CsTeam.CounterTerrorist);
         }
 

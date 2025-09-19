@@ -65,7 +65,7 @@ public class Queries
         Task.Run(async () => { await ClearWeaponPreferencesForUserAsync(userId); });
     }
 
-    public static async Task SetPreferredWeaponPreferenceAsync(ulong userId, CsItem? item)
+    public static async Task SetAwpWeaponPreferenceAsync(ulong userId, CsItem? item)
     {
         await UpsertUserSettings(userId, userSetting =>
         {
@@ -76,9 +76,9 @@ public class Queries
         });
     }
 
-    public static void SetPreferredWeaponPreference(ulong userId, CsItem? item)
+    public static void SetAwpWeaponPreference(ulong userId, CsItem? item)
     {
-        Task.Run(async () => { await SetPreferredWeaponPreferenceAsync(userId, item); });
+        Task.Run(async () => { await SetAwpWeaponPreferenceAsync(userId, item); });
     }
 
     public static IDictionary<ulong, UserSetting> GetUsersSettings(ICollection<ulong> userIds)
