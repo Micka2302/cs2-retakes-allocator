@@ -158,6 +158,37 @@ public class WeaponSelectionTests : BaseTestFixture
     }
 
     [Test]
+    public async Task PreferredScoutCanBeSetAndRemoved()
+    {
+        var args = new List<string> {"weapon_ssg08"};
+        var team = CsTeam.CounterTerrorist;
+
+        await OnWeaponCommandHelper.HandleAsync(args, TestSteamId, RoundType.FullBuy, team, false);
+
+        var userSettings = await Queries.GetUserSettings(TestSteamId);
+        Assert.That(
+            userSettings?.GetWeaponPreference(team, WeaponAllocationType.Preferred),
+            Is.EqualTo(CsItem.Scout));
+        Assert.That(
+            userSettings?.GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.Preferred),
+            Is.EqualTo(CsItem.Scout));
+
+        var allocationType =
+            WeaponHelpers.GetWeaponAllocationTypeForWeaponAndRound(RoundType.FullBuy, team, CsItem.Scout);
+        Assert.That(allocationType, Is.EqualTo(WeaponAllocationType.Preferred));
+
+        await OnWeaponCommandHelper.HandleAsync(args, TestSteamId, RoundType.FullBuy, team, true);
+
+        userSettings = await Queries.GetUserSettings(TestSteamId);
+        Assert.That(
+            userSettings?.GetWeaponPreference(team, WeaponAllocationType.Preferred),
+            Is.EqualTo(null));
+        Assert.That(
+            userSettings?.GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.Preferred),
+            Is.EqualTo(null));
+    }
+
+    [Test]
     [Retry(3)]
     public void RandomWeaponSelection()
     {
