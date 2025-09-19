@@ -244,18 +244,18 @@ public record ConfigData
     public float BombSiteAnnouncementCenterShowTimer { get; set; } = 5.0f;
     public bool EnableBombSiteAnnouncementChat { get; set; } = false;
     public bool EnableNextRoundTypeVoting { get; set; } = false;
-    public int NumberOfExtraVipChancesForPreferredWeapon { get; set; } = 1;
-    public bool AllowPreferredWeaponForEveryone { get; set; } = false;
+    public int NumberOfExtraVipChancesForAwpWeapon { get; set; } = 1;
+    public bool AllowAwpWeaponForEveryone { get; set; } = false;
 
-    public double ChanceForPreferredWeapon { get; set; } = 100;
+    public double ChanceForAwpWeapon { get; set; } = 100;
 
-    public Dictionary<CsTeam, int> MaxPreferredWeaponsPerTeam { get; set; } = new()
+    public Dictionary<CsTeam, int> MaxAwpWeaponsPerTeam { get; set; } = new()
     {
         {CsTeam.Terrorist, 1},
         {CsTeam.CounterTerrorist, 1},
     };
 
-    public Dictionary<CsTeam, int> MinPlayersPerTeamForPreferredWeapon { get; set; } = new()
+    public Dictionary<CsTeam, int> MinPlayersPerTeamForAwpWeapon { get; set; } = new()
     {
         {CsTeam.Terrorist, 1},
         {CsTeam.CounterTerrorist, 1},

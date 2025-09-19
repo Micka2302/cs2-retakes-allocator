@@ -170,11 +170,11 @@ Here are the weapon configs:
 
 
 - `ZeusPreference`: Whether or not to give a Zeus. Options are `Always` or `Never`. Defaults to `Never`.
-- `AllowPreferredWeaponForEveryone`: If `true`, everyone can get the AWP. This overrides every other "preferred" weapon
+- `AllowAwpWeaponForEveryone`: If `true`, everyone can get the AWP. This overrides every other "preferred" weapon
   setting. Defaults to `false`.
-- `MaxPreferredWeaponsPerTeam`: The maximum number of AWPs for each team.
-- `MinPlayersPerTeamForPreferredWeapon`: The minimum number of players on each team necessary for someone to get an AWP.
-- `ChanceForPreferredWeapon`: The % chance that the round will have an AWP.
+- `MaxAwpWeaponsPerTeam`: The maximum number of AWPs for each team.
+- `MinPlayersPerTeamForAwpWeapon`: The minimum number of players on each team necessary for someone to get an AWP.
+- `ChanceForAwpWeapon`: The % chance that the round will have an AWP.
 
 #### Nade Configuration
 
@@ -267,7 +267,7 @@ room for it*.
 #### Other Configuration
 
 - `EnableNextRoundTypeVoting`: Whether to allow voting for the next round type via `!nextround`. `false` by default.
-- `NumberOfExtraVipChancesForPreferredWeapon`: When randomly selecting preferred weapons per team (ie. "AWP queue"), how
+- `NumberOfExtraVipChancesForAwpWeapon`: When randomly selecting AWPs per team (ie. "AWP queue"), how
   many extra chances should VIPs get.
     - The default is 1, meaning VIPs will get 1 extra chance. For example, lets say
       there are 3 players on the team and this config is set to 1. Normally each person would have a 33% chance of
@@ -277,7 +277,7 @@ room for it*.
       the other two players will each have 25% chance of getting the AWP.
     - If you set this to 0, there will be no preference for VIPs.
     - If you set this to -1, only VIPs can get the AWP
-- `ChanceForPreferredWeapon`: This allows you to determine chance of players getting preferred weapon. (ie. 100 = %100, 50 = %50)
+- `ChanceForAwpWeapon`: This allows you to determine chance of players getting the AWP. (ie. 100 = %100, 50 = %50)
 - `AllowedWeaponSelectionTypes`: The types of weapon allocation that are allowed.
     - Choices:
         - `PlayerChoice` - Allow players to choose their preferences for the round type
