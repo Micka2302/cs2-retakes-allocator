@@ -250,6 +250,8 @@ public static class WeaponHelpers
     {
         {"m4a1", CsItem.M4A1S},
         {"m4a1-s", CsItem.M4A1S},
+        {"weapon_ssg08", CsItem.Scout},
+        {"ssg08", CsItem.Scout},
     };
 
     private static readonly Dictionary<CsItem, string> _weaponNameOverrides = new()
