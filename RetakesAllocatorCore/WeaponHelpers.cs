@@ -362,6 +362,23 @@ public static class WeaponHelpers
         return _ssgPreferredWeapons.Contains(weapon);
     }
 
+    public static bool CanUseSsgPreference(bool isVip)
+    {
+        var config = Configs.GetConfigData();
+
+        if (config.AllowSsgWeaponForEveryone)
+        {
+            return true;
+        }
+
+        if (!isVip && config.NumberOfExtraVipChancesForSsgWeapon == -1)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public static IList<T> SelectPreferredPlayers<T>(IEnumerable<T> players, Func<T, bool> isVip, CsTeam team)
     {
         var config = Configs.GetConfigData();

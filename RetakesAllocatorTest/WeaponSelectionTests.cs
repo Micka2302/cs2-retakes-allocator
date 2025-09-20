@@ -189,6 +189,69 @@ public class WeaponSelectionTests : BaseTestFixture
     }
 
     [Test]
+    public async Task SsgToggleSwitchesPreference()
+    {
+        var team = CsTeam.CounterTerrorist;
+
+        await OnWeaponCommandHelper.HandleAsync(
+            new List<string> {CsItem.AWP.ToString()},
+            TestSteamId,
+            RoundType.FullBuy,
+            team,
+            false);
+
+        var userSettings = await Queries.GetUserSettings(TestSteamId);
+        Assert.That(
+            userSettings?.GetWeaponPreference(team, WeaponAllocationType.Preferred),
+            Is.EqualTo(CsItem.AWP));
+
+        await OnWeaponCommandHelper.HandleAsync(
+            new List<string> {CsItem.Scout.ToString()},
+            TestSteamId,
+            RoundType.FullBuy,
+            team,
+            false);
+
+        userSettings = await Queries.GetUserSettings(TestSteamId);
+        Assert.That(
+            userSettings?.GetWeaponPreference(team, WeaponAllocationType.Preferred),
+            Is.EqualTo(CsItem.Scout));
+        Assert.That(
+            userSettings?.GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.Preferred),
+            Is.EqualTo(CsItem.Scout));
+
+        await OnWeaponCommandHelper.HandleAsync(
+            new List<string> {CsItem.Scout.ToString()},
+            TestSteamId,
+            RoundType.FullBuy,
+            team,
+            true);
+
+        userSettings = await Queries.GetUserSettings(TestSteamId);
+        Assert.That(
+            userSettings?.GetWeaponPreference(team, WeaponAllocationType.Preferred),
+            Is.EqualTo(null));
+        Assert.That(
+            userSettings?.GetWeaponPreference(CsTeam.Terrorist, WeaponAllocationType.Preferred),
+            Is.EqualTo(null));
+    }
+
+    [Test]
+    public void NonVipCannotToggleSsgWhenVipOnly()
+    {
+        var configData = new ConfigData
+        {
+            NumberOfExtraVipChancesForSsgWeapon = -1,
+            AllowSsgWeaponForEveryone = false,
+        };
+
+        Configs.OverrideConfigDataForTests(configData);
+
+        Assert.That(WeaponHelpers.CanUseSsgPreference(false), Is.False);
+        Assert.That(WeaponHelpers.CanUseSsgPreference(true), Is.True);
+    }
+
+    [Test]
     [Retry(3)]
     public void RandomWeaponSelection()
     {

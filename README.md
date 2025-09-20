@@ -70,12 +70,13 @@ There are a few different ways to set weapon preferences:
 - Built-in buy menu (See "Buy Menu" section for more info on how to set that up)
 - `!gun <gun>` - Set a preference for a particular gun (will automatically figure out the round type)
 - `!awp` - Toggles if you want an AWP or not.
+- `!ssg` - Toggles if you want an SSG (Scout) or not.
 - `!guns` - Opens a chat-based menu for weapon preferences
 
 See more info below about the commands in the "Commands" section.
 
 Preferred weapons include AWPs, auto-snipers and the SSG (Scout). You can select the SSG as your preferred sniper via
-the same commands (for example `!gun weapon_ssg08`), and the distribution of those snipers can be configured
+`!ssg` or the same commands (for example `!gun weapon_ssg08`), and the distribution of those snipers can be configured
 independently from the AWP queue.
 
 #### AWP Queue
@@ -86,9 +87,9 @@ so far.
 
 #### SSG Queue
 
-Players who prefer the SSG (Scout) can also enter a dedicated queue. On full buy rounds the plugin will independently
-roll for SSG availability, apply the SSG-specific limits and then merge the resulting list with any AWP picks before
-weapons are allocated. See the configuration section below for the options that control the SSG queue.
+Players who prefer the SSG (Scout) can also enter a dedicated queue through `!ssg`. On full buy rounds the plugin will
+independently roll for SSG availability, apply the SSG-specific limits and then merge the resulting list with any AWP
+picks before weapons are allocated. See the configuration section below for the options that control the SSG queue.
 
 ### Buy Menu
 
@@ -357,6 +358,7 @@ You can use the following commands to select specific weapon preferences per-use
       Galil
 - `!guns` - Opens up a chat-based menu for setting weapon preferences.
 - `!awp` - Toggle whether or not you want to get an AWP.
+- `!ssg` - Toggle whether or not you want to get an SSG (Scout).
 - `!removegun <weapon> [T|CT]` - Remove a preference for the chosen weapon for the team you are currently on, or T/CT if
   provided
     - For example, if you previously did `!gun galil` while a terrorist, and you do `!removegun galil` while a

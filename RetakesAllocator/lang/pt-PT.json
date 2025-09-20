@@ -41,14 +41,15 @@
   "guns_menu.complete": "Terminaste de configurar as tuas armas!\nAs armas que selecionaste ser-te-ão entregues no início da próxima ronda!",
   "guns_menu.select_weapon": "Seleciona uma arma {0} {1}",
   "guns_menu.weapon_selected": "Selecionaste {0} como arma {1} {2}!",
-  "guns_menu.awp_menu": "Seleciona quando receber a AWP",
-  "guns_menu.awp_always": "Sempre",
+  "guns_menu.awp_menu": "Seleciona a tua preferência de sniper",
+  "guns_menu.awp_always": "AWP / Auto",
+  "guns_menu.awp_scout": "SSG (Scout)",
   "guns_menu.awp_never": "Nunca",
-  "guns_menu.awp_preference_selected": "Selecionaste '{0}' para receber a AWP!",
+  "guns_menu.awp_preference_selected": "Selecionaste '{0}' como a tua preferência de sniper!",
 
   "menu.main.tloadout": "█ Loadout T █",
   "menu.main.ctloadout": "█ Loadout CT █",
-  "menu.main.awp": "█ AWP █",
+  "menu.main.awp": "█ Snipers █",
 
   "menu.tprimary": "█ Primária T █",
   "menu.tsecondary": "█ Secundária T █",
@@ -58,7 +59,8 @@
   "menu.ctsecondary": "█ Secundária CT █",
   "menu.ctPistol": "█ Ronda de Pistola CT █",
 
-  "menu.awp.always": "Sempre",
+  "menu.awp.always": "AWP / Auto",
+  "menu.awp.ssg": "SSG (Scout)",
   "menu.awp.never": "Nunca",
 
   "menu.left.image": "<img src='https://raw.githubusercontent.com/yonilerner/cs2-retakes-allocator/main/Resources/left.gif' class=''>",
