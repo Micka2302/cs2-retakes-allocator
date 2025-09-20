@@ -77,7 +77,7 @@ public class AdvancedGunMenu
                 string[] Main = { 
                     string.IsNullOrEmpty(Translator.Instance["menu.main.tloadout"]) ? "█░ T Loadout ░█" : Translator.Instance["menu.main.tloadout"], 
                     string.IsNullOrEmpty(Translator.Instance["menu.main.ctloadout"]) ? "█░ CT Loadout ░█" : Translator.Instance["menu.main.ctloadout"], 
-                    string.IsNullOrEmpty(Translator.Instance["menu.main.awp"]) ? "█░ AWP ░█" : Translator.Instance["menu.main.awp"]
+                    string.IsNullOrEmpty(Translator.Instance["menu.main.awp"]) ? "█░ Snipers ░█" : Translator.Instance["menu.main.awp"]
                 };
 
                 List<string> TFullBuyList = new List<string>();
@@ -104,8 +104,9 @@ public class AdvancedGunMenu
                     string.IsNullOrEmpty(Translator.Instance["menu.ctHalfbuy"]) ? "█ CT Half Buy █" : Translator.Instance["menu.ctHalfbuy"]
                 };
 
-                string[] AWP = { 
-                    string.IsNullOrEmpty(Translator.Instance["menu.awp.always"]) ? "Always" : Translator.Instance["menu.awp.always"], 
+                string[] SniperOptions = {
+                    string.IsNullOrEmpty(Translator.Instance["menu.awp.always"]) ? "AWP / Auto" : Translator.Instance["menu.awp.always"],
+                    string.IsNullOrEmpty(Translator.Instance["menu.awp.ssg"]) ? "SSG (Scout)" : Translator.Instance["menu.awp.ssg"],
                     string.IsNullOrEmpty(Translator.Instance["menu.awp.never"]) ? "Never" : Translator.Instance["menu.awp.never"]
                 };
 
@@ -203,9 +204,9 @@ public class AdvancedGunMenu
                         currentIndexDict[playerid] = (currentIndexDict[playerid] == CTPistolRound.Length - 1) ? 0 : currentIndexDict[playerid] + 1;
                     }
 
-                    if (mainmenu[playerid] == 9)//AWP loadout
+                    if (mainmenu[playerid] == 9)//Sniper preference
                     {
-                        currentIndexDict[playerid] = (currentIndexDict[playerid] == AWP.Length - 1) ? 0 : currentIndexDict[playerid] + 1;
+                        currentIndexDict[playerid] = (currentIndexDict[playerid] == SniperOptions.Length - 1) ? 0 : currentIndexDict[playerid] + 1;
                     }
                     if (mainmenu[playerid] == 11)//CT Half Buy
                     {
@@ -260,9 +261,9 @@ public class AdvancedGunMenu
                         currentIndexDict[playerid] = (currentIndexDict[playerid] == 0) ? CTPistolRound.Length - 1 : currentIndexDict[playerid] - 1;
                     }
 
-                    if (mainmenu[playerid] == 9)//AWP loadout
+                    if (mainmenu[playerid] == 9)//Sniper preference
                     {
-                        currentIndexDict[playerid] = (currentIndexDict[playerid] == 0) ? AWP.Length - 1 : currentIndexDict[playerid] - 1;
+                        currentIndexDict[playerid] = (currentIndexDict[playerid] == 0) ? SniperOptions.Length - 1 : currentIndexDict[playerid] - 1;
                     }
                     if (mainmenu[playerid] == 11)//CT Half Buy
                     {
@@ -327,13 +328,18 @@ public class AdvancedGunMenu
 
                     if (mainmenu[playerid] == 9)
                     {
-                        string currentLineName = AWP[currentLineIndex];
-                        if (currentLineName == AWP[0])
+                        string currentLineName = SniperOptions[currentLineIndex];
+                        if (currentLineName == SniperOptions[0])
                         {
                             GunsMenu.HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.AWP.ToString(), remove: false);
                             Print(player, Translator.Instance["guns_menu.awp_preference_selected",currentLineName]);
                         }
-                        if (currentLineName == AWP[1])
+                        else if (currentLineName == SniperOptions[1])
+                        {
+                            GunsMenu.HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.Scout.ToString(), remove: false);
+                            Print(player, Translator.Instance["guns_menu.awp_preference_selected",currentLineName]);
+                        }
+                        else if (currentLineName == SniperOptions[2])
                         {
                             GunsMenu.HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.AWP.ToString(), remove: true);
                             Print(player, Translator.Instance["guns_menu.awp_preference_selected",currentLineName]);
@@ -551,16 +557,16 @@ public class AdvancedGunMenu
                     }
                     if(mainmenu[playerid] == 9)
                     {
-                        for (int i = 0; i < AWP.Length; i++)
+                        for (int i = 0; i < SniperOptions.Length; i++)
                         {
-                            if (i == currentIndexDict[playerid]) 
+                            if (i == currentIndexDict[playerid])
                             {
-                                string lineHtml = $"<font color='orange'>{Imageleft} {AWP[i]} {ImageRight}</font><br>";
+                                string lineHtml = $"<font color='orange'>{Imageleft} {SniperOptions[i]} {ImageRight}</font><br>";
                                 builder.AppendLine(lineHtml);
                             }
                             else
                             {
-                                builder.AppendLine($"<font color='white'>{AWP[i]}</font><br>");
+                                builder.AppendLine($"<font color='white'>{SniperOptions[i]}</font><br>");
                             }
                         }
                         builder.AppendLine(BottomMenu);

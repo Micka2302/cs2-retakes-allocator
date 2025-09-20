@@ -378,15 +378,17 @@ public class GunsMenu : AbstractBaseMenu
 
     private string AwpNeverOption => Translator.Instance["guns_menu.awp_never"];
     private string AwpMyTurnOption => Translator.Instance["guns_menu.awp_always"];
+    private string AwpScoutOption => Translator.Instance["guns_menu.awp_scout"];
 
     private void OpenGiveAwpMenu(CCSPlayerController player)
     {
         var menu = new ChatMenu($"{MessagePrefix}{Translator.Instance["guns_menu.awp_menu"]}");
 
         menu.AddMenuOption(AwpNeverOption, OnGiveAwpSelect);
-        // Implementing "Sometimes" will require a more complex AWP queue
+        // Implementing "Sometimes" will require a more complex sniper queue
         // menu.AddMenuOption("Sometimes", OnGiveAwpSelect);
         menu.AddMenuOption(AwpMyTurnOption, OnGiveAwpSelect);
+        menu.AddMenuOption(AwpScoutOption, OnGiveAwpSelect);
 
         menu.AddMenuOption(Translator.Instance["menu.exit"], OnSelectExit);
 
@@ -414,6 +416,10 @@ public class GunsMenu : AbstractBaseMenu
         else if (option.Text == AwpMyTurnOption)
         {
             HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.AWP.ToString(), remove: false);
+        }
+        else if (option.Text == AwpScoutOption)
+        {
+            HandlePreferenceSelection(player, CsTeam.Terrorist, CsItem.Scout.ToString(), remove: false);
         }
 
         OnMenuComplete(player);

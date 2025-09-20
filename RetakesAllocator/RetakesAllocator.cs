@@ -279,14 +279,63 @@ public class RetakesAllocator : BasePlugin
             var currentPreferredSetting = (await Queries.GetUserSettings(playerId))
                 ?.GetWeaponPreference(currentTeam, WeaponAllocationType.Preferred);
 
+            var shouldRemove = currentPreferredSetting is not null &&
+                WeaponHelpers.IsAwpOrAutoSniperPreference(currentPreferredSetting.Value);
+
             return await OnWeaponCommandHelper.HandleAsync(
                 new List<string> {CsItem.AWP.ToString()},
                 playerId,
                 RoundTypeManager.Instance.GetCurrentRoundType(),
                 currentTeam,
-                currentPreferredSetting is not null
+                shouldRemove
             );
         }).Result;
+        Helpers.WriteNewlineDelimited(result.Item1, commandInfo.ReplyToCommand);
+    }
+
+    [ConsoleCommand("css_ssg", "Join or leave the SSG queue.")]
+    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    public void OnSsgCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        if (!Helpers.PlayerIsValid(player))
+        {
+            return;
+        }
+
+        var playerId = Helpers.GetSteamId(player);
+        if (playerId == 0)
+        {
+            commandInfo.ReplyToCommand("Cannot save preferences with invalid Steam ID.");
+            return;
+        }
+
+        var currentTeam = player!.Team;
+
+        var isVip = Helpers.IsVip(player);
+        if (!WeaponHelpers.CanUseSsgPreference(isVip))
+        {
+            var message = Translator.Instance["weapon_preference.only_vip_can_use"];
+            commandInfo.ReplyToCommand($"{MessagePrefix}{message}");
+            return;
+        }
+
+        var result = Task.Run(async () =>
+        {
+            var currentPreferredSetting = (await Queries.GetUserSettings(playerId))
+                ?.GetWeaponPreference(currentTeam, WeaponAllocationType.Preferred);
+
+            var shouldRemove = currentPreferredSetting is not null &&
+                WeaponHelpers.IsSsgPreference(currentPreferredSetting.Value);
+
+            return await OnWeaponCommandHelper.HandleAsync(
+                new List<string> {CsItem.Scout.ToString()},
+                playerId,
+                RoundTypeManager.Instance.GetCurrentRoundType(),
+                currentTeam,
+                shouldRemove
+            );
+        }).Result;
+
         Helpers.WriteNewlineDelimited(result.Item1, commandInfo.ReplyToCommand);
     }
 
