@@ -69,15 +69,10 @@ There are a few different ways to set weapon preferences:
 
 - Built-in buy menu (See "Buy Menu" section for more info on how to set that up)
 - `!gun <gun>` - Set a preference for a particular gun (will automatically figure out the round type)
-- `!awp` - Toggles if you want an AWP or not.
+- `!awp` - Toggles if you want an AWP or not. (Fullbuy Rounds)
+- `!ssg` - Toggle if you want SSG or not (Fullbuy Rounds)
 - `!guns` - Opens a chat-based menu for weapon preferences
-
-See more info below about the commands in the "Commands" section.
-
-Preferred weapons include AWPs, auto-snipers and the SSG (Scout). You can select the SSG as your preferred sniper via
-the same commands (for example `!gun weapon_ssg08`), and the distribution of those snipers can be configured
-independently from the AWP queue.
-
+  
 #### AWP Queue
 
 Currently one AWPer will be selected per team as long as at least one person on the team has chosen to get an AWP. AWP
