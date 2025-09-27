@@ -37,6 +37,11 @@
   "vote_menu.select_vote": "选择您的投票！",
 
   "guns_menu.invalid_steam_id": "您不能使用无效的 Steam ID 设置武器偏好。",
+  "guns_menu.title": "{0} ??",
+  "guns_menu.unavailable": "???",
+  "guns_menu.awp_label": "AWP ??",
+  "guns_menu.awp_enabled": "???",
+  "guns_menu.awp_disabled": "???",
   "guns_menu.complete": "您已经完成了武器设置！\n您选择的武器将在下一轮开始时给予您！",
   "guns_menu.select_weapon": "选择一个 {0} {1} 武器",
   "guns_menu.weapon_selected": "您选择了 {0} 作为 {1} {2} 武器！",

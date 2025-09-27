@@ -38,6 +38,11 @@
   "vote_menu.select_vote": "Select your vote!",
 
   "guns_menu.invalid_steam_id": "You cannot set weapon preferences with invalid Steam ID.",
+  "guns_menu.title": "{0} Loadout",
+  "guns_menu.unavailable": "Unavailable",
+  "guns_menu.awp_label": "AWP Preference",
+  "guns_menu.awp_enabled": "Enabled",
+  "guns_menu.awp_disabled": "Disabled",
   "guns_menu.complete": "You have finished setting up your weapons!\nThe weapons you have selected will be given to you at the start of the next round!",
   "guns_menu.select_weapon": "Select a {0} {1} Weapon",
   "guns_menu.weapon_selected": "You selected {0} as {1} {2} weapon!",

@@ -38,6 +38,11 @@
   "vote_menu.select_vote": "Selecione seu voto!",
 
   "guns_menu.invalid_steam_id": "Você não pode definir preferências de armas com um STEAM ID inválido.",
+  "guns_menu.title": "Loadout {0}",
+  "guns_menu.unavailable": "Indispon�vel",
+  "guns_menu.awp_label": "Prefer�ncia de AWP",
+  "guns_menu.awp_enabled": "Ativado",
+  "guns_menu.awp_disabled": "Desativado",
   "guns_menu.complete": "Você terminou de configurar suas armas!\nAs armas que você selecionou serão entregues a você no início da próximo round!",
   "guns_menu.select_weapon": "Selecione uma arma {0} {1}",
   "guns_menu.weapon_selected": "Você selecionou {0} como arma {1} {2}!",
