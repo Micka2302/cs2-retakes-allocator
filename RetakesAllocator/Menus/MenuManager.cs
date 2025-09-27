@@ -7,7 +7,6 @@ namespace RetakesAllocator.Menus;
 
 public enum MenuType
 {
-    Guns,
     NextRoundVote,
 }
 
@@ -15,7 +14,6 @@ public class AllocatorMenuManager
 {
     private readonly Dictionary<MenuType, AbstractBaseMenu> _menus = new()
     {
-        {MenuType.Guns, new GunsMenu()},
         {MenuType.NextRoundVote, new VoteMenu(new NextRoundVoteManager())},
     };
 

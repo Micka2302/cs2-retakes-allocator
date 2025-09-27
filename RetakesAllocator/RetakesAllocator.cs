@@ -22,6 +22,7 @@ using RetakesAllocator.AdvancedMenus;
 using static RetakesAllocatorCore.PluginInfo;
 using RetakesPluginShared;
 using RetakesPluginShared.Events;
+using KitsuneMenu.Core;
 
 namespace RetakesAllocator;
 
@@ -50,7 +51,8 @@ public class RetakesAllocator : BasePlugin
     public override void Load(bool hotReload)
     {
         Configs.Shared.Module = ModuleDirectory;
-        
+        MenuFileSystem.Initialize(ModuleDirectory);
+
         Log.Debug($"Loaded. Hot reload: {hotReload}");
         ResetState();
         Batteries.Init();
@@ -430,9 +432,23 @@ public class RetakesAllocator : BasePlugin
 
         if (item is CsItem.Taser)
         {
-            return Configs.GetConfigData().ZeusPreference == ZeusPreference.Always ? HookResult.Continue : RetStop();
-        }
+            var config = Configs.GetConfigData();
+            if (!config.EnableZeusPreference)
+            {
+                return RetStop();
+            }
 
+            var steamId = Helpers.GetSteamId(player);
+            if (steamId == 0)
+            {
+                return RetStop();
+            }
+
+            var userSettings = Queries.GetUsersSettings(new[] { steamId });
+            userSettings.TryGetValue(steamId, out var userSetting);
+
+            return userSetting?.ZeusEnabled == true ? HookResult.Continue : RetStop();
+        }
         if (!WeaponHelpers.IsUsableWeapon(item))
         {
             return RetStop();
@@ -912,17 +928,6 @@ public class RetakesAllocator : BasePlugin
         string trimmedMessageStart = eventmessage.TrimStart();
         string message = trimmedMessageStart.TrimEnd();
 
-        if (!string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuChatCommands))
-        {
-            string[] chatMenuCommands = Configs.GetConfigData().InGameGunMenuChatCommands.Split(',');
-
-            if (chatMenuCommands.Any(cmd => cmd.Equals(message, StringComparison.OrdinalIgnoreCase)))
-            {
-                _allocatorMenuManager.OpenMenuForPlayer(player, MenuType.Guns);
-            }
-        }
-
-
         return HookResult.Continue;
     }
 
@@ -1032,6 +1037,3 @@ public class RetakesAllocator : BasePlugin
 
     #endregion
 }
-
-
-

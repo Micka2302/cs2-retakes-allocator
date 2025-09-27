@@ -19,8 +19,8 @@ internal static class GlobalMenuManager
     private static readonly ConcurrentDictionary<uint, KeyRepeatInfo> _keyRepeatInfo = new();
     private static readonly object _initLock = new();
     private static bool _isInitialized = false;
-    private static MenuConfig _config = new MenuConfig();
-    private static MenuTranslations _translations = MenuTranslations.Instance;
+    private static MenuConfig _config = new();
+    private static MenuTranslations? _translations;
 
     public static void EnsureInitialized()
     {
@@ -61,7 +61,7 @@ internal static class GlobalMenuManager
     }
 
     public static MenuConfig Config => _config;
-    public static MenuTranslations Translations => _translations;
+    public static MenuTranslations Translations => _translations ?? MenuTranslations.Load();
 
     public static void Cleanup()
     {
@@ -465,7 +465,7 @@ internal static class GlobalMenuManager
         // Item counter if scrollable
         if (totalItems > maxVisibleItems)
         {
-            html.Append($"<font class='fontSize-s' color='#FFFFFF'> {string.Format(_translations.ItemsCounter, session.SelectedIndex + 1, totalItems)}</font>");
+            html.Append($"<font class='fontSize-s' color='#FFFFFF'> {string.Format(Translations.ItemsCounter, session.SelectedIndex + 1, totalItems)}</font>");
         }
 
         html.Append("<font color='#FFFFFF' class='fontSize-sm'><br>");
@@ -552,16 +552,16 @@ internal static class GlobalMenuManager
         var exitDisplay = GetButtonNamesFromFlags(exitButtons);
 
         // Select section (no Move section anymore, WASD is hardcoded)
-        footer.Append($"{_translations.FooterSelect}: <font color='#f5a142'>{_translations.GetButtonsDisplay(selectDisplay)}");
+        footer.Append($"{Translations.FooterSelect}: <font color='#f5a142'>{Translations.GetButtonsDisplay(selectDisplay)}");
 
         // Back section (only for submenus)
         if (isSubmenu)
         {
-            footer.Append($"<font color='#FFFFFF'> | <font color='#ff3333'>{_translations.FooterBack}: <font color='#f5a142'>{_translations.GetButtonsDisplay(backDisplay)}");
+            footer.Append($"<font color='#FFFFFF'> | <font color='#ff3333'>{Translations.FooterBack}: <font color='#f5a142'>{Translations.GetButtonsDisplay(backDisplay)}");
         }
 
         // Exit section
-        footer.Append($"<font color='#FFFFFF'> | <font color='#ff3333'>{_translations.FooterExit}: <font color='#f5a142'>{_translations.GetButtonsDisplay(exitDisplay)}");
+        footer.Append($"<font color='#FFFFFF'> | <font color='#ff3333'>{Translations.FooterExit}: <font color='#f5a142'>{Translations.GetButtonsDisplay(exitDisplay)}");
 
         footer.Append("</font><br>");
         return footer.ToString();
@@ -589,3 +589,4 @@ internal static class GlobalMenuManager
     }
 
 }
+

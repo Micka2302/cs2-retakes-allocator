@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using System.Collections.Concurrent;
 using System.Linq;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
@@ -19,8 +18,6 @@ namespace RetakesAllocator.AdvancedMenus;
 
 public class AdvancedGunMenu
 {
-    private readonly ConcurrentDictionary<ulong, CsItem> _lastPreferredSnipers = new();
-
     public HookResult OnEventPlayerChat(EventPlayerChat @event, GameEventInfo info)
     {
         if (@event == null)
@@ -68,11 +65,6 @@ public class AdvancedGunMenu
         }
 
         var steamId = Helpers.GetSteamId(player);
-        if (steamId != 0)
-        {
-            _lastPreferredSnipers.TryRemove(steamId, out _);
-        }
-
         KitsuneMenu.KitsuneMenu.CloseMenu(player);
         return HookResult.Continue;
     }
@@ -111,7 +103,15 @@ public class AdvancedGunMenu
             return;
         }
 
-        ShowMenu(player, data);
+        Server.NextFrame(() =>
+        {
+            if (!Helpers.PlayerIsValid(player))
+            {
+                return;
+            }
+
+            ShowMenu(player, data);
+        });
     }
 
     private async Task<GunMenuData?> BuildMenuDataAsync(CsTeam team, ulong steamId)
@@ -123,17 +123,18 @@ public class AdvancedGunMenu
         var secondaryOptions = WeaponHelpers
             .GetPossibleWeaponsForAllocationType(WeaponAllocationType.Secondary, team)
             .ToList();
+        var pistolOptions = WeaponHelpers
+            .GetPossibleWeaponsForAllocationType(WeaponAllocationType.PistolRound, team)
+            .ToList();
 
         var currentPrimary = userSettings?.GetWeaponPreference(team, WeaponAllocationType.FullBuyPrimary) ??
                              GetDefaultWeapon(team, WeaponAllocationType.FullBuyPrimary, primaryOptions);
         var currentSecondary = userSettings?.GetWeaponPreference(team, WeaponAllocationType.Secondary) ??
                                GetDefaultWeapon(team, WeaponAllocationType.Secondary, secondaryOptions);
+        var currentPistol = userSettings?.GetWeaponPreference(team, WeaponAllocationType.PistolRound) ??
+                            GetDefaultWeapon(team, WeaponAllocationType.PistolRound, pistolOptions);
 
         var preferredSniper = userSettings?.GetWeaponPreference(team, WeaponAllocationType.Preferred);
-        if (preferredSniper.HasValue)
-        {
-            _lastPreferredSnipers[steamId] = preferredSniper.Value;
-        }
 
         return new GunMenuData
         {
@@ -141,9 +142,12 @@ public class AdvancedGunMenu
             Team = team,
             PrimaryOptions = primaryOptions,
             SecondaryOptions = secondaryOptions,
+            PistolOptions = pistolOptions,
             CurrentPrimary = currentPrimary,
             CurrentSecondary = currentSecondary,
-            PreferredSniper = preferredSniper
+            CurrentPistol = currentPistol,
+            PreferredSniper = preferredSniper,
+            ZeusEnabled = userSettings?.ZeusEnabled ?? false
         };
     }
 
@@ -152,9 +156,18 @@ public class AdvancedGunMenu
         var teamDisplayName = GetTeamDisplayName(data.Team);
         var menuTitle = Translator.Instance["guns_menu.title", teamDisplayName];
 
+        var config = Configs.GetConfigData();
         var menuBuilder = KitsuneMenu.KitsuneMenu.Create(menuTitle)
-            .MaxVisibleItems(4)
-            .NoFreeze();
+            .MaxVisibleItems(config.EnableZeusPreference ? 5 : 4);
+
+        if (GlobalMenuManager.Config.FreezePlayer)
+        {
+            menuBuilder.ForceFreeze();
+        }
+        else
+        {
+            menuBuilder.NoFreeze();
+        }
 
         var primaryNames = data.PrimaryOptions.Select(static weapon => weapon.GetName()).ToArray();
         if (primaryNames.Length > 0)
@@ -182,17 +195,57 @@ public class AdvancedGunMenu
                 TextAlign.Left, MenuTextSize.Medium);
         }
 
-        var awpLabel = Translator.Instance["guns_menu.awp_label"];
-        var awpEnabled = data.PreferredSniper.HasValue;
-        var awpChoices = new[]
+        var pistolNames = data.PistolOptions.Select(static weapon => weapon.GetName()).ToArray();
+        if (pistolNames.Length > 0)
         {
-            Translator.Instance["guns_menu.awp_enabled"],
-            Translator.Instance["guns_menu.awp_disabled"]
-        };
-        var defaultAwpChoice = awpEnabled ? awpChoices[0] : awpChoices[1];
-        menuBuilder.AddChoice(awpLabel, awpChoices, defaultAwpChoice,
-            (ply, choice) => HandleAwpChoice(ply, data, choice == awpChoices[0]), MenuTextSize.Large);
+            var defaultPistol = data.CurrentPistol?.GetName() ?? pistolNames[0];
+            menuBuilder.AddChoice(Translator.Instance["weapon_type.pistol"], pistolNames, defaultPistol,
+                (ply, choice) => HandlePistolChoice(ply, data, choice), MenuTextSize.Large);
+        }
+        else
+        {
+            menuBuilder.AddText($"{Translator.Instance["weapon_type.pistol"]}: {Translator.Instance["guns_menu.unavailable"]}",
+                TextAlign.Left, MenuTextSize.Medium);
+        }
 
+        var sniperLabel = Translator.Instance["guns_menu.sniper_label"];
+        var sniperChoices = new[]
+        {
+            Translator.Instance["guns_menu.sniper_awp"],
+            Translator.Instance["guns_menu.sniper_ssg"],
+            Translator.Instance["guns_menu.sniper_disabled"]
+        };
+
+        var defaultSniperChoice = sniperChoices[2];
+        if (data.PreferredSniper is { } preferredSniper)
+        {
+            defaultSniperChoice = preferredSniper switch
+            {
+                CsItem.Scout => sniperChoices[1],
+                _ => sniperChoices[0]
+            };
+        }
+
+        menuBuilder.AddChoice(sniperLabel, sniperChoices, defaultSniperChoice,
+            (ply, choice) => HandleSniperChoice(ply, data, choice, sniperChoices), MenuTextSize.Large);
+
+        if (config.EnableZeusPreference)
+        {
+            var zeusChoices = new[]
+            {
+                Translator.Instance["guns_menu.zeus_choice_disable"],
+                Translator.Instance["guns_menu.zeus_choice_enable"]
+            };
+
+            var defaultZeusChoice = data.ZeusEnabled ? zeusChoices[1] : zeusChoices[0];
+
+            menuBuilder.AddChoice(
+                Translator.Instance["guns_menu.zeus_label"],
+                zeusChoices,
+                defaultZeusChoice,
+                (ply, choice) => HandleZeusChoice(ply, data, choice, zeusChoices),
+                MenuTextSize.Large);
+        }
         menuBuilder.AddSeparator();
         menuBuilder.AddButton(Translator.Instance["menu.exit"], ply => KitsuneMenu.KitsuneMenu.CloseMenu(ply));
         var menu = menuBuilder.Build();
@@ -223,9 +276,16 @@ public class AdvancedGunMenu
         ApplyWeaponSelection(player, data.SteamId, data.Team, RoundType.FullBuy, weapon.Value);
     }
 
-    private void HandleAwpChoice(CCSPlayerController player, GunMenuData data, bool enabled)
+    private void HandlePistolChoice(CCSPlayerController player, GunMenuData data, string choice)
     {
-        ApplyAwpPreference(player, data, enabled);
+        var weapon = FindWeaponByName(data.PistolOptions, choice);
+        if (weapon == null)
+        {
+            return;
+        }
+
+        data.CurrentPistol = weapon;
+        ApplyWeaponSelection(player, data.SteamId, data.Team, RoundType.Pistol, weapon.Value);
     }
 
     private void ApplyWeaponSelection(CCSPlayerController player, ulong steamId, CsTeam team,
@@ -252,42 +312,49 @@ public class AdvancedGunMenu
         });
     }
 
-    private void ApplyAwpPreference(CCSPlayerController player, GunMenuData data, bool enabled)
+    private void HandleSniperChoice(CCSPlayerController player, GunMenuData data, string choice, IReadOnlyList<string> options)
+    {
+        if (choice == options[0])
+        {
+            ApplySniperPreference(player, data, CsItem.AWP);
+        }
+        else if (choice == options[1])
+        {
+            ApplySniperPreference(player, data, CsItem.Scout);
+        }
+        else
+        {
+            ApplySniperPreference(player, data, null);
+        }
+    }
+
+    private void HandleZeusChoice(CCSPlayerController player, GunMenuData data, string choice, IReadOnlyList<string> options)
+    {
+        var enabled = choice == options[1];
+        if (data.ZeusEnabled == enabled)
+        {
+            return;
+        }
+
+        data.ZeusEnabled = enabled;
+        Queries.SetZeusPreference(data.SteamId, enabled);
+
+        var messageKey = enabled ? "guns_menu.zeus_enabled_message" : "guns_menu.zeus_disabled_message";
+        Helpers.WriteNewlineDelimited(Translator.Instance[messageKey], player.PrintToChat);
+    }
+    private void ApplySniperPreference(CCSPlayerController player, GunMenuData data, CsItem? preference)
     {
         var steamId = data.SteamId;
+        var previousPreference = data.PreferredSniper;
+        data.PreferredSniper = preference;
+
         _ = Task.Run(async () =>
         {
-            CsItem? itemToSet = null;
-            CsItem selectedReference;
+            await Queries.SetAwpWeaponPreferenceAsync(steamId, preference);
 
-            if (enabled)
-            {
-                if (!_lastPreferredSnipers.TryGetValue(steamId, out var stored))
-                {
-                    stored = data.PreferredSniper ?? CsItem.AWP;
-                }
-
-                itemToSet = stored;
-                data.PreferredSniper = stored;
-                _lastPreferredSnipers[steamId] = stored;
-                selectedReference = stored;
-            }
-            else
-            {
-                selectedReference = data.PreferredSniper ?? CsItem.AWP;
-                if (data.PreferredSniper.HasValue)
-                {
-                    _lastPreferredSnipers[steamId] = data.PreferredSniper.Value;
-                }
-
-                data.PreferredSniper = null;
-            }
-
-            await Queries.SetAwpWeaponPreferenceAsync(steamId, itemToSet);
-
-            var message = enabled
-                ? Translator.Instance["weapon_preference.set_preference_preferred", selectedReference]
-                : Translator.Instance["weapon_preference.unset_preference_preferred", selectedReference.GetName()];
+            var message = preference.HasValue
+                ? Translator.Instance["weapon_preference.set_preference_preferred", preference.Value]
+                : Translator.Instance["weapon_preference.unset_preference_preferred", previousPreference ?? CsItem.AWP];
 
             Server.NextFrame(() =>
             {
@@ -330,11 +397,18 @@ public class AdvancedGunMenu
         public required CsTeam Team { get; init; }
         public required List<CsItem> PrimaryOptions { get; init; }
         public required List<CsItem> SecondaryOptions { get; init; }
+        public required List<CsItem> PistolOptions { get; init; }
         public CsItem? CurrentPrimary { get; set; }
         public CsItem? CurrentSecondary { get; set; }
+        public CsItem? CurrentPistol { get; set; }
         public CsItem? PreferredSniper { get; set; }
+        public bool ZeusEnabled { get; set; }
     }
 }
+
+
+
+
 
 
 

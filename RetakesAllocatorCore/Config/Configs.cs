@@ -245,6 +245,7 @@ public record ConfigData
     public bool EnableBombSiteAnnouncementChat { get; set; } = false;
     public bool EnableNextRoundTypeVoting { get; set; } = false;
     public bool EnableAllWeaponsForEveryone { get; set; } = false;
+    public bool EnableZeusPreference { get; set; } = false;
     public int NumberOfExtraVipChancesForAwpWeapon { get; set; } = 1;
     public bool AllowAwpWeaponForEveryone { get; set; } = false;
 
@@ -286,11 +287,7 @@ public record ConfigData
     public string? ChatMessagePluginPrefix { get; set; }
 
     public string InGameGunMenuCenterCommands { get; set; } =
-        "gunsmenu,gunmenu,!gunmenu,!gunsmenu,!menugun,!menuguns,/gunsmenu,/gunmenu";
-
-    public string InGameGunMenuChatCommands { get; set; } = "guns,!guns,/guns";
-    public ZeusPreference ZeusPreference { get; set; } = ZeusPreference.Never;
-
+        "guns,!guns,/guns,gun,!gun,!gun";
     public DatabaseProvider DatabaseProvider { get; set; } = DatabaseProvider.Sqlite;
     public string DatabaseConnectionString { get; set; } = "Data Source=data.db; Pooling=False";
     public bool AutoUpdateSignatures { get; set; } = true;
@@ -377,4 +374,5 @@ public record ConfigData
         return AllowedWeaponSelectionTypes.Contains(WeaponSelectionType.Default);
     }
 }
+
 

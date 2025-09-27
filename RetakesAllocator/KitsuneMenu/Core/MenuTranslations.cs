@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text.Json;
 
 namespace KitsuneMenu.Core;
@@ -42,7 +41,8 @@ public class MenuTranslations
 
     public static MenuTranslations Load()
     {
-        var translationsPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, TRANSLATIONS_FILE);
+        var translationsPath = MenuFileSystem.Combine("config", TRANSLATIONS_FILE);
+        MenuFileSystem.EnsureDirectoryForFile(translationsPath);
         var translations = new MenuTranslations();
 
         if (File.Exists(translationsPath))
@@ -68,7 +68,7 @@ public class MenuTranslations
 
     private static void Save()
     {
-        var translationsPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, TRANSLATIONS_FILE);
+        var translationsPath = MenuFileSystem.Combine("config", TRANSLATIONS_FILE);
         var translationsContent = @"{
     /* Menu UI text translations */
 
@@ -97,6 +97,7 @@ public class MenuTranslations
 
         try
         {
+            MenuFileSystem.EnsureDirectoryForFile(translationsPath);
             File.WriteAllText(translationsPath, translationsContent);
         }
         catch

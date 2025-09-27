@@ -1,5 +1,4 @@
 using CounterStrikeSharp.API;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -30,7 +29,8 @@ public class MenuConfig
 
     public static MenuConfig Load()
     {
-        var configPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, CONFIG_FILE);
+        var configPath = MenuFileSystem.Combine("config", CONFIG_FILE);
+        MenuFileSystem.EnsureDirectoryForFile(configPath);
         var config = new MenuConfig();
 
         if (File.Exists(configPath))
@@ -57,7 +57,8 @@ public class MenuConfig
 
     private static void Save()
     {
-        var configPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, CONFIG_FILE);
+        var configPath = MenuFileSystem.Combine("config", CONFIG_FILE);
+        MenuFileSystem.EnsureDirectoryForFile(configPath);
         var configContent = @"{
     /* Configuration for KitsuneMenu
 

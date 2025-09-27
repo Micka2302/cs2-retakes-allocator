@@ -174,7 +174,7 @@ Here are the weapon configs:
 ```
 
 
-- `ZeusPreference`: Whether or not to give a Zeus. Options are `Always` or `Never`. Defaults to `Never`.
+- `EnableZeusPreference`: Enables the Zeus toggle in the Kitsune loadout menu. When disabled, no one receives a Zeus and the menu entry is hidden. Defaults to `false`.
 - `EnableAllWeaponsForEveryone`: When `true`, Counter-Terrorists and Terrorists can equip each other's primary and secondary weapons while VIP-restricted weapons keep their existing limits. Defaults to `false`.
 - `AllowAwpWeaponForEveryone`: If `true`, everyone can get the AWP. This overrides every other "preferred" weapon
   setting. Defaults to `false`.
@@ -372,3 +372,4 @@ Notes:
 
 - Run the dedicated server
   with `start cs2.exe -dedicated -insecure +game_type 0 +game_mode 0 +map de_dust2 +servercfgfile server.cfg`
+
