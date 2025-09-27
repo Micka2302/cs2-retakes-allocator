@@ -309,4 +309,28 @@ public class WeaponSelectionTests : BaseTestFixture
             RoundTypeManager.Instance.SetNextRoundTypeOverride(null);
         }
     }
+    [Test]
+    public async Task EnableAllWeaponsConfigAllowsCrossTeamWeapons()
+    {
+        Configs.GetConfigData().EnableAllWeaponsForEveryone = true;
+
+        var team = CsTeam.CounterTerrorist;
+
+        var result = await OnWeaponCommandHelper.HandleAsync(new[] {"galil"}, TestSteamId, RoundType.FullBuy, team, false);
+        Assert.That(result.Item2, Is.EqualTo(CsItem.Galil));
+        Assert.That(result.Item1, Does.Not.Contain("not valid"));
+        var preference = (await Queries.GetUserSettings(TestSteamId))
+            ?.GetWeaponPreference(team, WeaponAllocationType.FullBuyPrimary);
+        Assert.That(preference, Is.EqualTo(CsItem.Galil));
+
+        result = await OnWeaponCommandHelper.HandleAsync(new[] {"tec9"}, TestSteamId, RoundType.Pistol, team, false);
+        Assert.That(result.Item2, Is.EqualTo(CsItem.Tec9));
+        Assert.That(result.Item1, Does.Not.Contain("not valid"));
+        preference = (await Queries.GetUserSettings(TestSteamId))
+            ?.GetWeaponPreference(team, WeaponAllocationType.PistolRound);
+        Assert.That(preference, Is.EqualTo(CsItem.Tec9));
+    }
+
 }
+
+

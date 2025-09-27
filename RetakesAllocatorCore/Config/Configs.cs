@@ -244,6 +244,7 @@ public record ConfigData
     public float BombSiteAnnouncementCenterShowTimer { get; set; } = 5.0f;
     public bool EnableBombSiteAnnouncementChat { get; set; } = false;
     public bool EnableNextRoundTypeVoting { get; set; } = false;
+    public bool EnableAllWeaponsForEveryone { get; set; } = false;
     public int NumberOfExtraVipChancesForAwpWeapon { get; set; } = 1;
     public bool AllowAwpWeaponForEveryone { get; set; } = false;
 
@@ -376,3 +377,4 @@ public record ConfigData
         return AllowedWeaponSelectionTypes.Contains(WeaponSelectionType.Default);
     }
 }
+

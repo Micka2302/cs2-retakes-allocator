@@ -1,3 +1,4 @@
+using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
 using RetakesAllocatorCore.Config;
 
@@ -17,5 +18,21 @@ public class WeaponHelpersTests : BaseTestFixture
         var canAllocate = WeaponHelpers.IsWeaponAllocationAllowed(isFreezeTime);
 
         Assert.That(canAllocate, Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void EnableAllWeaponsConfigAllowsCrossTeamOptions()
+    {
+        Configs.GetConfigData().EnableAllWeaponsForEveryone = true;
+
+        var team = Utils.ParseTeam("CT");
+        var weapons = WeaponHelpers.GetPossibleWeaponsForAllocationType(
+            WeaponAllocationType.FullBuyPrimary, team);
+
+        var ak47 = WeaponHelpers.FindValidWeaponsByName("ak47").First();
+        var m4a1s = WeaponHelpers.FindValidWeaponsByName("m4a1s").First();
+
+        Assert.That(weapons, Does.Contain(ak47));
+        Assert.That(weapons, Does.Contain(m4a1s));
     }
 }

@@ -1,4 +1,4 @@
-﻿# CS2 Retakes Allocator
+# CS2 Retakes Allocator
 
 [![Build RetakesAllocator.zip](https://github.com/yonilerner/cs2-retakes-allocator/actions/workflows/build.yml/badge.svg)](https://github.com/yonilerner/cs2-retakes-allocator/actions/workflows/build.yml)
 
@@ -175,6 +175,7 @@ Here are the weapon configs:
 
 
 - `ZeusPreference`: Whether or not to give a Zeus. Options are `Always` or `Never`. Defaults to `Never`.
+- `EnableAllWeaponsForEveryone`: When `true`, Counter-Terrorists and Terrorists can equip each other's primary and secondary weapons while VIP-restricted weapons keep their existing limits. Defaults to `false`.
 - `AllowAwpWeaponForEveryone`: If `true`, everyone can get the AWP. This overrides every other "preferred" weapon
   setting. Defaults to `false`.
 - `AllowSsgWeaponForEveryone`: If `true`, everyone with an SSG preference can receive one. Defaults to `false`.
