@@ -157,8 +157,18 @@ public class AdvancedGunMenu
         var menuTitle = Translator.Instance["guns_menu.title", teamDisplayName];
 
         var config = Configs.GetConfigData();
+        var isVip = Helpers.IsVip(player);
+        var visibleItems = 3;
+        if (isVip)
+        {
+            visibleItems++;
+        }
+        if (config.EnableZeusPreference)
+        {
+            visibleItems++;
+        }
         var menuBuilder = KitsuneMenu.KitsuneMenu.Create(menuTitle)
-            .MaxVisibleItems(config.EnableZeusPreference ? 5 : 4);
+            .MaxVisibleItems(System.Math.Max(visibleItems, 4));
 
         if (GlobalMenuManager.Config.FreezePlayer)
         {
@@ -208,27 +218,29 @@ public class AdvancedGunMenu
                 TextAlign.Left, MenuTextSize.Medium);
         }
 
-        var sniperLabel = Translator.Instance["guns_menu.sniper_label"];
-        var sniperChoices = new[]
+        if (isVip)
         {
-            Translator.Instance["guns_menu.sniper_awp"],
-            Translator.Instance["guns_menu.sniper_ssg"],
-            Translator.Instance["guns_menu.sniper_disabled"]
-        };
-
-        var defaultSniperChoice = sniperChoices[2];
-        if (data.PreferredSniper is { } preferredSniper)
-        {
-            defaultSniperChoice = preferredSniper switch
+            var sniperLabel = Translator.Instance["guns_menu.sniper_label"];
+            var sniperChoices = new[]
             {
-                CsItem.Scout => sniperChoices[1],
-                _ => sniperChoices[0]
+                Translator.Instance["guns_menu.sniper_awp"],
+                Translator.Instance["guns_menu.sniper_ssg"],
+                Translator.Instance["guns_menu.sniper_disabled"]
             };
+
+            var defaultSniperChoice = sniperChoices[2];
+            if (data.PreferredSniper is { } preferredSniper)
+            {
+                defaultSniperChoice = preferredSniper switch
+                {
+                    CsItem.Scout => sniperChoices[1],
+                    _ => sniperChoices[0]
+                };
+            }
+
+            menuBuilder.AddChoice(sniperLabel, sniperChoices, defaultSniperChoice,
+                (ply, choice) => HandleSniperChoice(ply, data, choice, sniperChoices), MenuTextSize.Large);
         }
-
-        menuBuilder.AddChoice(sniperLabel, sniperChoices, defaultSniperChoice,
-            (ply, choice) => HandleSniperChoice(ply, data, choice, sniperChoices), MenuTextSize.Large);
-
         if (config.EnableZeusPreference)
         {
             var zeusChoices = new[]

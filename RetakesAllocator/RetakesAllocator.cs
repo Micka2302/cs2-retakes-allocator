@@ -293,6 +293,50 @@ public class RetakesAllocator : BasePlugin
         Helpers.WriteNewlineDelimited(result.Item1, commandInfo.ReplyToCommand);
     }
 
+    [ConsoleCommand("css_ssg", "Join or leave the SSG queue.")]
+    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    public void OnSsgCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        if (!Helpers.PlayerIsValid(player))
+        {
+            return;
+        }
+
+        if (!Helpers.IsVip(player!))
+        {
+            var message = Translator.Instance["weapon_preference.only_vip_can_use"];
+            commandInfo.ReplyToCommand($"{MessagePrefix}{message}");
+            return;
+        }
+
+        var playerId = Helpers.GetSteamId(player);
+        if (playerId == 0)
+        {
+            commandInfo.ReplyToCommand("Cannot save preferences with invalid Steam ID.");
+            return;
+        }
+
+        var currentTeam = player!.Team;
+
+        var result = Task.Run(async () =>
+        {
+            var currentPreferredSetting = (await Queries.GetUserSettings(playerId))
+                ?.GetWeaponPreference(currentTeam, WeaponAllocationType.Preferred);
+
+            var removing = currentPreferredSetting == CsItem.Scout;
+
+            return await OnWeaponCommandHelper.HandleAsync(
+                new List<string> { CsItem.Scout.ToString() },
+                playerId,
+                RoundTypeManager.Instance.GetCurrentRoundType(),
+                currentTeam,
+                removing
+            );
+        }).Result;
+
+        Helpers.WriteNewlineDelimited(result.Item1, commandInfo.ReplyToCommand);
+    }
+
     [ConsoleCommand("css_removegun")]
     [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void OnRemoveWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)
