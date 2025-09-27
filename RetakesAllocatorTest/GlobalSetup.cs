@@ -1,3 +1,4 @@
+using System.Globalization;
 using CounterStrikeSharp.API.Core.Translations;
 using RetakesAllocatorCore;
 using RetakesAllocatorCore.Config;
@@ -11,11 +12,16 @@ public class GlobalSetup
     [OneTimeSetUp]
     public void Setup()
     {
+        var culture = CultureInfo.GetCultureInfo("en");
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = culture;
+
         Configs.Load(".", true);
         Queries.Migrate();
         Translator.Initialize(new JsonStringLocalizer("../../../../RetakesAllocator/lang"));
     }
-
     [OneTimeTearDown]
     public void TearDown()
     {
@@ -32,3 +38,5 @@ public abstract class BaseTestFixture
         Queries.Wipe();
     }
 }
+
+

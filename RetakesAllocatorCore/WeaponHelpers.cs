@@ -258,6 +258,32 @@ public static class WeaponHelpers
         }
     };
 
+    private static ICollection<CsItem> GetAvailableWeaponsForTeamAndAllocationType(WeaponAllocationType allocationType, CsTeam team)
+    {
+        if (team != CsTeam.Terrorist && team != CsTeam.CounterTerrorist)
+        {
+            return new List<CsItem>();
+        }
+
+        var availableWeapons = new HashSet<CsItem>(_validWeaponsByTeamAndAllocationType[team][allocationType]);
+
+        var allowAllWeapons = Configs.IsLoaded() && Configs.GetConfigData().EnableAllWeaponsForEveryone;
+        if (!allowAllWeapons || allocationType == WeaponAllocationType.Preferred)
+        {
+            return availableWeapons;
+        }
+
+        var otherTeam = team == CsTeam.Terrorist ? CsTeam.CounterTerrorist : CsTeam.Terrorist;
+
+        if (_validWeaponsByTeamAndAllocationType.TryGetValue(otherTeam, out var otherAllocations) &&
+            otherAllocations.TryGetValue(allocationType, out var otherWeapons))
+        {
+            availableWeapons.UnionWith(otherWeapons);
+        }
+
+        return availableWeapons;
+    }
+
     private static readonly Dictionary<string, CsItem> _weaponNameSearchOverrides = new()
     {
         {"m4a1", CsItem.M4A1S},
@@ -325,13 +351,9 @@ public static class WeaponHelpers
     public static ICollection<CsItem> GetPossibleWeaponsForAllocationType(WeaponAllocationType allocationType,
         CsTeam team)
     {
-        if (team != CsTeam.Terrorist && team != CsTeam.CounterTerrorist)
-        {
-            return new List<CsItem>();
-        }
-        return _validWeaponsByTeamAndAllocationType[team][allocationType].Where(IsUsableWeapon).ToList();
+        var availableWeapons = GetAvailableWeaponsForTeamAndAllocationType(allocationType, team);
+        return availableWeapons.Where(IsUsableWeapon).ToList();
     }
-
     public static bool IsAllocationTypeValidForRound(WeaponAllocationType? allocationType, RoundType? roundType)
     {
         if (allocationType is null || roundType is null)
@@ -517,8 +539,9 @@ public static class WeaponHelpers
         // First populate all allocation types that could match
         // For a pistol this could be multiple allocation types, for any other weapon type only one can match
         var potentialAllocationTypes = new HashSet<WeaponAllocationType>();
-        foreach (var (allocationType, items) in _validWeaponsByTeamAndAllocationType[team])
+        foreach (var allocationType in _validWeaponsByTeamAndAllocationType[team].Keys)
         {
+            var items = GetAvailableWeaponsForTeamAndAllocationType(allocationType, team);
             if (items.Contains(weapon))
             {
                 potentialAllocationTypes.Add(allocationType);
@@ -668,16 +691,16 @@ public static class WeaponHelpers
             return CsItem.Deagle;
         }
 
-        var collectionToCheck = allocationType switch
+        var availableWeapons = GetAvailableWeaponsForTeamAndAllocationType(allocationType, team)
+            .Where(IsUsableWeapon)
+            .ToList();
+
+        if (availableWeapons.Count == 0)
         {
-            WeaponAllocationType.PistolRound => team == CsTeam.Terrorist ? _pistolsForT : _pistolsForCt,
-            WeaponAllocationType.Secondary => team == CsTeam.Terrorist ? _pistolsForT : _pistolsForCt,
-            WeaponAllocationType.HalfBuyPrimary => team == CsTeam.Terrorist ? _smgsForT : _smgsForCt,
-            WeaponAllocationType.FullBuyPrimary => team == CsTeam.Terrorist ? _tRifles : _ctRifles,
-            WeaponAllocationType.Preferred => team == CsTeam.Terrorist ? _preferredForT : _preferredForCt,
-            _ => _sharedPistols,
-        };
-        return Utils.Choice(collectionToCheck.Where(IsUsableWeapon).ToList());
+            return CsItem.Deagle;
+        }
+
+        return Utils.Choice(availableWeapons);
     }
 
     private static CsItem? GetWeaponForAllocationType(WeaponAllocationType allocationType, CsTeam team,
