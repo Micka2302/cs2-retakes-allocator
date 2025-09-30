@@ -225,17 +225,25 @@ public class AdvancedGunMenu
             {
                 Translator.Instance["guns_menu.sniper_awp"],
                 Translator.Instance["guns_menu.sniper_ssg"],
+                Translator.Instance["guns_menu.sniper_random"],
                 Translator.Instance["guns_menu.sniper_disabled"]
             };
 
-            var defaultSniperChoice = sniperChoices[2];
+            var defaultSniperChoice = sniperChoices[3];
             if (data.PreferredSniper is { } preferredSniper)
             {
-                defaultSniperChoice = preferredSniper switch
+                if (WeaponHelpers.IsRandomSniperPreference(preferredSniper))
                 {
-                    CsItem.Scout => sniperChoices[1],
-                    _ => sniperChoices[0]
-                };
+                    defaultSniperChoice = sniperChoices[2];
+                }
+                else
+                {
+                    defaultSniperChoice = preferredSniper switch
+                    {
+                        CsItem.Scout => sniperChoices[1],
+                        _ => sniperChoices[0]
+                    };
+                }
             }
 
             menuBuilder.AddChoice(sniperLabel, sniperChoices, defaultSniperChoice,
@@ -334,12 +342,15 @@ public class AdvancedGunMenu
         {
             ApplySniperPreference(player, data, CsItem.Scout);
         }
+        else if (choice == options[2])
+        {
+            ApplySniperPreference(player, data, WeaponHelpers.RandomSniperPreference);
+        }
         else
         {
             ApplySniperPreference(player, data, null);
         }
     }
-
     private void HandleZeusChoice(CCSPlayerController player, GunMenuData data, string choice, IReadOnlyList<string> options)
     {
         var enabled = choice == options[1];
@@ -364,9 +375,19 @@ public class AdvancedGunMenu
         {
             await Queries.SetAwpWeaponPreferenceAsync(steamId, preference);
 
-            var message = preference.HasValue
-                ? Translator.Instance["weapon_preference.set_preference_preferred", preference.Value]
-                : Translator.Instance["weapon_preference.unset_preference_preferred", previousPreference ?? CsItem.AWP];
+            string message;
+            if (preference.HasValue)
+            {
+                message = WeaponHelpers.IsRandomSniperPreference(preference.Value)
+                    ? Translator.Instance["weapon_preference.set_preference_preferred_random"]
+                    : Translator.Instance["weapon_preference.set_preference_preferred", preference.Value];
+            }
+            else
+            {
+                message = previousPreference.HasValue && WeaponHelpers.IsRandomSniperPreference(previousPreference.Value)
+                    ? Translator.Instance["weapon_preference.unset_preference_preferred_random"]
+                    : Translator.Instance["weapon_preference.unset_preference_preferred", previousPreference ?? CsItem.AWP];
+            }
 
             Server.NextFrame(() =>
             {

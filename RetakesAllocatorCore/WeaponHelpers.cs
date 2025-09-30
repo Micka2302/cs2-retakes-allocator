@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
@@ -144,6 +145,16 @@ public static class WeaponHelpers
 
     private static readonly ICollection<CsItem> _ssgPreferredWeapons = new HashSet<CsItem>
     {
+        CsItem.Scout,
+    };
+
+    private const int RandomSniperPreferenceValue = int.MinValue + 1024;
+
+    public static readonly CsItem RandomSniperPreference = (CsItem)RandomSniperPreferenceValue;
+
+    private static readonly IReadOnlyList<CsItem> _randomSniperPool = new List<CsItem>
+    {
+        CsItem.AWP,
         CsItem.Scout,
     };
 
@@ -374,14 +385,24 @@ public static class WeaponHelpers
         };
     }
 
+    public static bool IsRandomSniperPreference(CsItem? weapon)
+    {
+        return weapon.HasValue && weapon.Value == RandomSniperPreference;
+    }
+
+    public static CsItem ChooseRandomSniperWeapon()
+    {
+        return _randomSniperPool[Random.Shared.Next(_randomSniperPool.Count)];
+    }
+
     public static bool IsAwpOrAutoSniperPreference(CsItem weapon)
     {
-        return _awpAndAutoPreferred.Contains(weapon);
+        return _awpAndAutoPreferred.Contains(weapon) || IsRandomSniperPreference(weapon);
     }
 
     public static bool IsSsgPreference(CsItem weapon)
     {
-        return _ssgPreferredWeapons.Contains(weapon);
+        return _ssgPreferredWeapons.Contains(weapon) || IsRandomSniperPreference(weapon);
     }
 
     public static IList<T> SelectPreferredPlayers<T>(IEnumerable<T> players, Func<T, bool> isVip, CsTeam team)
@@ -481,7 +502,17 @@ public static class WeaponHelpers
 
     public static CsItem? CoercePreferredTeam(CsItem? item, CsTeam team)
     {
-        if (item == null || !_allPreferred.Contains(item.Value))
+        if (item == null)
+        {
+            return null;
+        }
+
+        if (IsRandomSniperPreference(item))
+        {
+            return RandomSniperPreference;
+        }
+
+        if (!_allPreferred.Contains(item.Value))
         {
             return null;
         }
@@ -711,7 +742,11 @@ public static class WeaponHelpers
         if (Configs.GetConfigData().CanPlayersSelectWeapons() && userSetting is not null)
         {
             var weaponPreference = userSetting.GetWeaponPreference(team, allocationType);
-            if (weaponPreference is not null && IsUsableWeapon(weaponPreference.Value))
+            if (IsRandomSniperPreference(weaponPreference))
+            {
+                weapon = ChooseRandomSniperWeapon();
+            }
+            else if (weaponPreference is not null && IsUsableWeapon(weaponPreference.Value))
             {
                 weapon = weaponPreference;
             }
