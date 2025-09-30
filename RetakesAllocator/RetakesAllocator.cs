@@ -337,6 +337,41 @@ public class RetakesAllocator : BasePlugin
         Helpers.WriteNewlineDelimited(result.Item1, commandInfo.ReplyToCommand);
     }
 
+    [ConsoleCommand("css_zeus", "Toggle whether you will receive a Zeus.")]
+    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    public void OnZeusCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        if (!Helpers.PlayerIsValid(player))
+        {
+            return;
+        }
+
+        if (!Configs.GetConfigData().EnableZeusPreference)
+        {
+            var message = Translator.Instance["guns_menu.zeus_disabled_message"];
+            commandInfo.ReplyToCommand($"{MessagePrefix}{message}");
+            return;
+        }
+
+        var playerId = Helpers.GetSteamId(player);
+        if (playerId == 0)
+        {
+            commandInfo.ReplyToCommand("Cannot save preferences with invalid Steam ID.");
+            return;
+        }
+
+        var zeusEnabled = Task.Run(async () =>
+        {
+            var settings = await Queries.GetUserSettings(playerId);
+            var currentlyEnabled = settings?.ZeusEnabled ?? false;
+            var toggled = !currentlyEnabled;
+            await Queries.SetZeusPreferenceAsync(playerId, toggled);
+            return toggled;
+        }).Result;
+
+        var messageKey = zeusEnabled ? "guns_menu.zeus_enabled_message" : "guns_menu.zeus_disabled_message";
+        Helpers.WriteNewlineDelimited(Translator.Instance[messageKey], commandInfo.ReplyToCommand);
+    }
     [ConsoleCommand("css_removegun")]
     [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void OnRemoveWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)

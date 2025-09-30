@@ -71,6 +71,7 @@ There are a few different ways to set weapon preferences:
 - `!gun <gun>` - Set a preference for a particular gun (will automatically figure out the round type)
 - `!awp` - Toggles if you want an AWP or not. (Fullbuy Rounds)
 - `!ssg` - Toggle if you want SSG or not (Fullbuy Rounds)
+- `!zeus` - Toggle whether you will receive a Zeus each round.
 - `!guns` - Opens a chat-based menu for weapon preferences
   
 #### AWP Queue
@@ -353,6 +354,7 @@ You can use the following commands to select specific weapon preferences per-use
       Galil
 - `!guns` - Opens up a chat-based menu for setting weapon preferences.
 - `!awp` - Toggle whether or not you want to get an AWP.
+- `!zeus` - Toggle whether you will receive a Zeus each round.
 - `!removegun <weapon> [T|CT]` - Remove a preference for the chosen weapon for the team you are currently on, or T/CT if
   provided
     - For example, if you previously did `!gun galil` while a terrorist, and you do `!removegun galil` while a
