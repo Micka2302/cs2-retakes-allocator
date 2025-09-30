@@ -451,11 +451,6 @@ public class RetakesAllocator : BasePlugin
         Log.Debug("OnWeaponCanAcquire");
         
         var acquireMethod = hook.GetParam<AcquireMethod>(2);
-        if (acquireMethod == AcquireMethod.PickUp)
-        {
-            return HookResult.Continue;
-        }
-
         if (Helpers.IsWarmup())
         {
             return HookResult.Continue;
@@ -1116,3 +1111,4 @@ public class RetakesAllocator : BasePlugin
 
     #endregion
 }
+
