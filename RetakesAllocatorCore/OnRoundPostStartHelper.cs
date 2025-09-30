@@ -1,4 +1,4 @@
-﻿using CounterStrikeSharp.API.Modules.Entities.Constants;
+using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore.Config;
 using RetakesAllocatorCore.Db;
@@ -161,7 +161,7 @@ public class OnRoundPostStartHelper
                 }
             }
 
-            if (Configs.GetConfigData().ZeusPreference == ZeusPreference.Always)
+            if (Configs.GetConfigData().EnableZeusPreference && userSetting?.ZeusEnabled == true)
             {
                 items.Add(CsItem.Zeus);
             }

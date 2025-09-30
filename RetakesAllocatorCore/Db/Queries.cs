@@ -81,6 +81,15 @@ public class Queries
         Task.Run(async () => { await SetAwpWeaponPreferenceAsync(userId, item); });
     }
 
+    public static async Task SetZeusPreferenceAsync(ulong userId, bool enabled)
+    {
+        await UpsertUserSettings(userId, userSetting => { userSetting.ZeusEnabled = enabled; });
+    }
+
+    public static void SetZeusPreference(ulong userId, bool enabled)
+    {
+        Task.Run(async () => { await SetZeusPreferenceAsync(userId, enabled); });
+    }
     public static IDictionary<ulong, UserSetting> GetUsersSettings(ICollection<ulong> userIds)
     {
         var userSettingsList = Db.GetInstance()

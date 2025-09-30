@@ -22,7 +22,7 @@ using RetakesAllocator.AdvancedMenus;
 using static RetakesAllocatorCore.PluginInfo;
 using RetakesPluginShared;
 using RetakesPluginShared.Events;
-using CounterStrikeSharp.API.Modules.Events;
+using KitsuneMenu.Core;
 
 namespace RetakesAllocator;
 
@@ -51,10 +51,12 @@ public class RetakesAllocator : BasePlugin
     public override void Load(bool hotReload)
     {
         Configs.Shared.Module = ModuleDirectory;
-        
+        MenuFileSystem.Initialize(ModuleDirectory);
+
         Log.Debug($"Loaded. Hot reload: {hotReload}");
         ResetState();
         Batteries.Init();
+        KitsuneMenu.KitsuneMenu.Init();
 
         RegisterListener<Listeners.OnMapStart>(mapName =>
         {
@@ -137,6 +139,7 @@ public class RetakesAllocator : BasePlugin
     public override void Unload(bool hotReload)
     {
         Log.Debug("Unloaded");
+        KitsuneMenu.KitsuneMenu.Cleanup();
         ResetState(loadConfig: false);
         Queries.Disconnect();
 
@@ -290,6 +293,85 @@ public class RetakesAllocator : BasePlugin
         Helpers.WriteNewlineDelimited(result.Item1, commandInfo.ReplyToCommand);
     }
 
+    [ConsoleCommand("css_ssg", "Join or leave the SSG queue.")]
+    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    public void OnSsgCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        if (!Helpers.PlayerIsValid(player))
+        {
+            return;
+        }
+
+        if (!Helpers.IsVip(player!))
+        {
+            var message = Translator.Instance["weapon_preference.only_vip_can_use"];
+            commandInfo.ReplyToCommand($"{MessagePrefix}{message}");
+            return;
+        }
+
+        var playerId = Helpers.GetSteamId(player);
+        if (playerId == 0)
+        {
+            commandInfo.ReplyToCommand("Cannot save preferences with invalid Steam ID.");
+            return;
+        }
+
+        var currentTeam = player!.Team;
+
+        var result = Task.Run(async () =>
+        {
+            var currentPreferredSetting = (await Queries.GetUserSettings(playerId))
+                ?.GetWeaponPreference(currentTeam, WeaponAllocationType.Preferred);
+
+            var removing = currentPreferredSetting == CsItem.Scout;
+
+            return await OnWeaponCommandHelper.HandleAsync(
+                new List<string> { CsItem.Scout.ToString() },
+                playerId,
+                RoundTypeManager.Instance.GetCurrentRoundType(),
+                currentTeam,
+                removing
+            );
+        }).Result;
+
+        Helpers.WriteNewlineDelimited(result.Item1, commandInfo.ReplyToCommand);
+    }
+
+    [ConsoleCommand("css_zeus", "Toggle whether you will receive a Zeus.")]
+    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    public void OnZeusCommand(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        if (!Helpers.PlayerIsValid(player))
+        {
+            return;
+        }
+
+        if (!Configs.GetConfigData().EnableZeusPreference)
+        {
+            var message = Translator.Instance["guns_menu.zeus_disabled_message"];
+            commandInfo.ReplyToCommand($"{MessagePrefix}{message}");
+            return;
+        }
+
+        var playerId = Helpers.GetSteamId(player);
+        if (playerId == 0)
+        {
+            commandInfo.ReplyToCommand("Cannot save preferences with invalid Steam ID.");
+            return;
+        }
+
+        var zeusEnabled = Task.Run(async () =>
+        {
+            var settings = await Queries.GetUserSettings(playerId);
+            var currentlyEnabled = settings?.ZeusEnabled ?? false;
+            var toggled = !currentlyEnabled;
+            await Queries.SetZeusPreferenceAsync(playerId, toggled);
+            return toggled;
+        }).Result;
+
+        var messageKey = zeusEnabled ? "guns_menu.zeus_enabled_message" : "guns_menu.zeus_disabled_message";
+        Helpers.WriteNewlineDelimited(Translator.Instance[messageKey], commandInfo.ReplyToCommand);
+    }
     [ConsoleCommand("css_removegun")]
     [CommandHelper(minArgs: 1, usage: "<gun> [T|CT]", whoCanExecute: CommandUsage.CLIENT_ONLY)]
     public void OnRemoveWeaponCommand(CCSPlayerController? player, CommandInfo commandInfo)
@@ -429,9 +511,23 @@ public class RetakesAllocator : BasePlugin
 
         if (item is CsItem.Taser)
         {
-            return Configs.GetConfigData().ZeusPreference == ZeusPreference.Always ? HookResult.Continue : RetStop();
-        }
+            var config = Configs.GetConfigData();
+            if (!config.EnableZeusPreference)
+            {
+                return RetStop();
+            }
 
+            var steamId = Helpers.GetSteamId(player);
+            if (steamId == 0)
+            {
+                return RetStop();
+            }
+
+            var userSettings = Queries.GetUsersSettings(new[] { steamId });
+            userSettings.TryGetValue(steamId, out var userSetting);
+
+            return userSetting?.ZeusEnabled == true ? HookResult.Continue : RetStop();
+        }
         if (!WeaponHelpers.IsUsableWeapon(item))
         {
             return RetStop();
@@ -467,14 +563,16 @@ public class RetakesAllocator : BasePlugin
     public HookResult OnPostItemPurchase(EventItemPurchase @event, GameEventInfo info)
     {
         var player = @event.Userid;
-        if (Helpers.IsWarmup() || !Helpers.PlayerIsValid(player) || !player.PlayerPawn.IsValid)
+        var pawnHandle = player?.PlayerPawn;
+        if (Helpers.IsWarmup() || !Helpers.PlayerIsValid(player) || pawnHandle is null || !pawnHandle.IsValid)
         {
             return HookResult.Continue;
         }
 
+        var controller = player!;
         var item = Utils.ToEnum<CsItem>(@event.Weapon);
-        var team = player.Team;
-        var playerId = Helpers.GetSteamId(player);
+        var team = controller.Team;
+        var playerId = Helpers.GetSteamId(controller);
         var isPreferred = WeaponHelpers.IsPreferred(team, item);
 
         var purchasedAllocationType = RoundTypeManager.Instance.GetCurrentRoundType() is not null
@@ -508,7 +606,7 @@ public class RetakesAllocator : BasePlugin
             var slotType = WeaponHelpers.GetSlotTypeForItem(item);
             if (slotType is not null)
             {
-                SetPlayerRoundAllocation(player, slotType.Value, item);
+                SetPlayerRoundAllocation(controller, slotType.Value, item);
             }
             else
             {
@@ -517,7 +615,7 @@ public class RetakesAllocator : BasePlugin
         }
         else
         {
-            var removedAnyWeapons = Helpers.RemoveWeapons(player,
+            var removedAnyWeapons = Helpers.RemoveWeapons(controller,
                 i =>
                 {
                     if (!WeaponHelpers.IsWeapon(i))
@@ -552,12 +650,12 @@ public class RetakesAllocator : BasePlugin
                 Log.Debug($"Replacement allocation type {replacementAllocationType}");
                 if (replacementAllocationType is not null)
                 {
-                    var replacementItem = GetPlayerRoundAllocation(player, replacementSlot);
+                    var replacementItem = GetPlayerRoundAllocation(controller, replacementSlot);
                     Log.Debug($"Replacement item {replacementItem} for slot {replacementSlot}");
                     if (replacementItem is not null)
                     {
                         replacedWeapon = true;
-                        AllocateItemsForPlayer(player, new List<CsItem>
+                        AllocateItemsForPlayer(controller, new List<CsItem>
                         {
                             replacementItem.Value
                         }, slotToSelect);
@@ -569,20 +667,24 @@ public class RetakesAllocator : BasePlugin
             {
                 AddTimer(0.1f, () =>
                 {
-                    if (Helpers.PlayerIsValid(player) && player.UserId is not null)
+                    if (Helpers.PlayerIsValid(controller) && controller.UserId is not null)
                     {
-                        NativeAPI.IssueClientCommand((int) player.UserId, slotToSelect);
+                        NativeAPI.IssueClientCommand((int) controller.UserId, slotToSelect);
                     }
                 });
             }
         }
 
-        var playerPos = player.PlayerPawn.Value?.AbsOrigin;
+        var playerPos = controller.PlayerPawn?.Value?.AbsOrigin;
 
         var pEntity = new CEntityIdentity(EntitySystem.FirstActiveEntity);
         for (; pEntity is not null && pEntity.Handle != IntPtr.Zero; pEntity = pEntity.Next)
         {
             var p = Utilities.GetEntityFromIndex<CBasePlayerWeapon>((int) pEntity.EntityInstance.Index);
+            if (p is null)
+            {
+                continue;
+            }
             if (
                 !p.IsValid ||
                 !p.DesignerName.StartsWith("weapon") ||
@@ -615,13 +717,13 @@ public class RetakesAllocator : BasePlugin
             {
                 var message = OnWeaponCommandHelper.Handle(
                     new List<string> {itemName},
-                    Helpers.GetSteamId(player),
+                    Helpers.GetSteamId(controller),
                     RoundTypeManager.Instance.GetCurrentRoundType(),
                     team,
                     false,
                     out _
                 );
-                Helpers.WriteNewlineDelimited(message, player.PrintToChat);
+                Helpers.WriteNewlineDelimited(message, controller.PrintToChat);
             }
         }
 
@@ -904,17 +1006,6 @@ public class RetakesAllocator : BasePlugin
         if (string.IsNullOrWhiteSpace(eventmessage)) return HookResult.Continue;
         string trimmedMessageStart = eventmessage.TrimStart();
         string message = trimmedMessageStart.TrimEnd();
-
-        if (!string.IsNullOrEmpty(Configs.GetConfigData().InGameGunMenuChatCommands))
-        {
-            string[] chatMenuCommands = Configs.GetConfigData().InGameGunMenuChatCommands.Split(',');
-
-            if (chatMenuCommands.Any(cmd => cmd.Equals(message, StringComparison.OrdinalIgnoreCase)))
-            {
-                _allocatorMenuManager.OpenMenuForPlayer(player, MenuType.Guns);
-            }
-        }
-
 
         return HookResult.Continue;
     }

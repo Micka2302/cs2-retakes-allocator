@@ -10,7 +10,7 @@ public class OnWeaponCommandHelper
     public static string Handle(ICollection<string> args, ulong userId, RoundType? roundType, CsTeam currentTeam,
         bool remove, out CsItem? outWeapon)
     {
-        var result = Task.Run(() => HandleAsync(args, userId, roundType, currentTeam, remove)).Result;
+        var result = HandleAsync(args, userId, roundType, currentTeam, remove).GetAwaiter().GetResult();
         outWeapon = result.Item2;
         return result.Item1;
     }
@@ -113,12 +113,12 @@ public class OnWeaponCommandHelper
         {
             if (isPreferred)
             {
-                _ = Queries.SetAwpWeaponPreferenceAsync(userId, null);
+                await Queries.SetAwpWeaponPreferenceAsync(userId, null);
                 return Ret(Translator.Instance["weapon_preference.unset_preference_preferred", weapon]);
             }
             else
             {
-                _ = Queries.SetWeaponPreferenceForUserAsync(userId, team, allocationType.Value, null);
+                await Queries.SetWeaponPreferenceForUserAsync(userId, team, allocationType.Value, null);
                 return Ret(
                     Translator.Instance["weapon_preference.unset_preference", weapon, allocationType.Value, team]);
             }
@@ -127,13 +127,13 @@ public class OnWeaponCommandHelper
         string message;
         if (isPreferred)
         {
-            _ = Queries.SetAwpWeaponPreferenceAsync(userId, weapon);
+            await Queries.SetAwpWeaponPreferenceAsync(userId, weapon);
             // If we ever add more preferred weapons, we need to change the wording of "sniper" here
             message = Translator.Instance["weapon_preference.set_preference_preferred", weapon];
         }
         else
         {
-            _ = Queries.SetWeaponPreferenceForUserAsync(userId, team, allocationType.Value, weapon);
+            await Queries.SetWeaponPreferenceForUserAsync(userId, team, allocationType.Value, weapon);
             message = Translator.Instance["weapon_preference.set_preference", weapon, allocationType.Value, team];
         }
 
@@ -154,3 +154,5 @@ public class OnWeaponCommandHelper
         return Ret(message);
     }
 }
+
+

@@ -71,6 +71,7 @@ There are a few different ways to set weapon preferences:
 - `!gun <gun>` - Set a preference for a particular gun (will automatically figure out the round type)
 - `!awp` - Toggles if you want an AWP or not. (Fullbuy Rounds)
 - `!ssg` - Toggle if you want SSG or not (Fullbuy Rounds)
+- `!zeus` - Toggle whether you will receive a Zeus each round.
 - `!guns` - Opens a chat-based menu for weapon preferences
   
 #### AWP Queue
@@ -174,7 +175,7 @@ Here are the weapon configs:
 ```
 
 
-- `ZeusPreference`: Whether or not to give a Zeus. Options are `Always` or `Never`. Defaults to `Never`.
+- `EnableZeusPreference`: Enables the Zeus toggle in the Kitsune loadout menu. When disabled, no one receives a Zeus and the menu entry is hidden. Defaults to `false`.
 - `EnableAllWeaponsForEveryone`: When `true`, Counter-Terrorists and Terrorists can equip each other's primary and secondary weapons while VIP-restricted weapons keep their existing limits. Defaults to `false`.
 - `AllowAwpWeaponForEveryone`: If `true`, everyone can get the AWP. This overrides every other "preferred" weapon
   setting. Defaults to `false`.
@@ -353,6 +354,7 @@ You can use the following commands to select specific weapon preferences per-use
       Galil
 - `!guns` - Opens up a chat-based menu for setting weapon preferences.
 - `!awp` - Toggle whether or not you want to get an AWP.
+- `!zeus` - Toggle whether you will receive a Zeus each round.
 - `!removegun <weapon> [T|CT]` - Remove a preference for the chosen weapon for the team you are currently on, or T/CT if
   provided
     - For example, if you previously did `!gun galil` while a terrorist, and you do `!removegun galil` while a
@@ -372,3 +374,4 @@ Notes:
 
 - Run the dedicated server
   with `start cs2.exe -dedicated -insecure +game_type 0 +game_mode 0 +map de_dust2 +servercfgfile server.cfg`
+

@@ -25,6 +25,8 @@ public class UserSetting
     [Column(TypeName = "text"), MaxLength(10000)]
     public WeaponPreferencesType WeaponPreferences { get; set; } = new();
 
+    public bool ZeusEnabled { get; set; } = false;
+
     public static void Configure(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder
