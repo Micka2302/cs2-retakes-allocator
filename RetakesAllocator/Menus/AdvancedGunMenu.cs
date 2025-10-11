@@ -159,14 +159,15 @@ public class AdvancedGunMenu
 
         var config = Configs.GetConfigData();
         var isVip = Helpers.IsVip(player);
+        var canUseEnemyStuff = config.EnableEnemyStuffPreference && Helpers.HasEnemyStuffPermission(player);
         var visibleItems = 3;
         if (isVip)
         {
             visibleItems++;
-            if (config.EnableEnemyStuffPreference)
-            {
-                visibleItems++;
-            }
+        }
+        if (canUseEnemyStuff)
+        {
+            visibleItems++;
         }
         if (config.EnableZeusPreference)
         {
@@ -254,7 +255,7 @@ public class AdvancedGunMenu
             menuBuilder.AddChoice(sniperLabel, sniperChoices, defaultSniperChoice,
                 (ply, choice) => HandleSniperChoice(ply, data, choice, sniperChoices), MenuTextSize.Large);
         }
-        if (isVip && config.EnableEnemyStuffPreference)
+        if (canUseEnemyStuff)
         {
             var enemyStuffChoices = new[]
             {
@@ -389,6 +390,12 @@ public class AdvancedGunMenu
     }
     private void HandleEnemyStuffChoice(CCSPlayerController player, GunMenuData data, string choice, IReadOnlyList<string> options)
     {
+        if (!Helpers.HasEnemyStuffPermission(player))
+        {
+            Helpers.WriteNewlineDelimited(Translator.Instance["weapon_preference.only_vip_can_use"], player.PrintToChat);
+            return;
+        }
+
         var enabled = choice == options[1];
         if (data.EnemyStuffEnabled == enabled)
         {

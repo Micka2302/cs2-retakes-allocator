@@ -324,6 +324,7 @@ public class WeaponSelectionTests : BaseTestFixture
                     _ => { },
                     (player, items, _) => { allocations[player] = new(items); },
                     _ => false,
+                    _ => false,
                     out var roundType
                 );
 
@@ -382,6 +383,7 @@ public class WeaponSelectionTests : BaseTestFixture
                 p => p == 1 ? CsTeam.Terrorist : CsTeam.CounterTerrorist,
                 _ => { },
                 (player, items, _) => { allocations[player] = new List<CsItem>(items); },
+                _ => false,
                 _ => false,
                 out var roundType
             );

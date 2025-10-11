@@ -45,7 +45,11 @@ public class WeaponHelpersTests : BaseTestFixture
         {
             EnableEnemyStuffPreference = true,
             ChanceForEnemyStuff = 100,
-            AllowedWeaponSelectionTypes = new List<WeaponSelectionType> { WeaponSelectionType.Default },
+            AllowedWeaponSelectionTypes = new List<WeaponSelectionType>
+            {
+                WeaponSelectionType.PlayerChoice,
+                WeaponSelectionType.Default
+            },
         };
 
         Configs.OverrideConfigDataForTests(config);
@@ -54,19 +58,117 @@ public class WeaponHelpersTests : BaseTestFixture
         {
             EnemyStuffEnabled = true,
         };
+        userSetting.SetWeaponPreference(
+            CsTeam.Terrorist,
+            WeaponAllocationType.FullBuyPrimary,
+            CsItem.Galil
+        );
+        userSetting.SetWeaponPreference(
+            CsTeam.CounterTerrorist,
+            WeaponAllocationType.FullBuyPrimary,
+            CsItem.M4A1S
+        );
 
-        var weapons = WeaponHelpers.GetWeaponsForRoundType(
+        var selection = WeaponHelpers.GetWeaponsForRoundType(
             RoundType.FullBuy,
             CsTeam.CounterTerrorist,
             userSetting,
             givePreferred: false
-        ).ToList();
+        );
+
+        var weapons = selection.Weapons.ToList();
 
         var primary = weapons.Last();
         var terroristPrimaries =
             WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.FullBuyPrimary, CsTeam.Terrorist);
 
-        Assert.That(primary, Is.Not.EqualTo(CsItem.M4A1S));
+        Assert.That(primary, Is.EqualTo(CsItem.Galil));
         Assert.That(terroristPrimaries, Does.Contain(primary));
+        Assert.That(selection.EnemyStuffGranted, Is.True);
+    }
+
+    [Test]
+    public void EnemyStuffPreferenceSwapsPistolRoundWeapon()
+    {
+        var config = new ConfigData
+        {
+            EnableEnemyStuffPreference = true,
+            ChanceForEnemyStuff = 100,
+            AllowedWeaponSelectionTypes = new List<WeaponSelectionType>
+            {
+                WeaponSelectionType.PlayerChoice,
+                WeaponSelectionType.Default
+            },
+        };
+
+        Configs.OverrideConfigDataForTests(config);
+
+        var userSetting = new UserSetting
+        {
+            EnemyStuffEnabled = true,
+        };
+        userSetting.SetWeaponPreference(
+            CsTeam.Terrorist,
+            WeaponAllocationType.PistolRound,
+            CsItem.Tec9
+        );
+        userSetting.SetWeaponPreference(
+            CsTeam.CounterTerrorist,
+            WeaponAllocationType.PistolRound,
+            CsItem.USPS
+        );
+
+        var selection = WeaponHelpers.GetWeaponsForRoundType(
+            RoundType.Pistol,
+            CsTeam.CounterTerrorist,
+            userSetting,
+            givePreferred: false
+        );
+
+        var weapons = selection.Weapons.ToList();
+
+        Assert.That(weapons, Has.Count.EqualTo(1));
+        Assert.That(weapons[0], Is.EqualTo(CsItem.Tec9));
+        Assert.That(selection.EnemyStuffGranted, Is.True);
+    }
+
+    [Test]
+    public void EnemyStuffQuotaBlocksSwapWhenUnavailable()
+    {
+        var config = new ConfigData
+        {
+            EnableEnemyStuffPreference = true,
+            ChanceForEnemyStuff = 100,
+            AllowedWeaponSelectionTypes = new List<WeaponSelectionType>
+            {
+                WeaponSelectionType.PlayerChoice,
+                WeaponSelectionType.Default
+            },
+        };
+
+        Configs.OverrideConfigDataForTests(config);
+
+        var userSetting = new UserSetting
+        {
+            EnemyStuffEnabled = true,
+        };
+        userSetting.SetWeaponPreference(
+            CsTeam.Terrorist,
+            WeaponAllocationType.FullBuyPrimary,
+            CsItem.Galil
+        );
+
+        var selection = WeaponHelpers.GetWeaponsForRoundType(
+            RoundType.FullBuy,
+            CsTeam.CounterTerrorist,
+            userSetting,
+            givePreferred: false,
+            enemyStuffQuotaAvailable: false
+        );
+
+        var weapons = selection.Weapons.ToList();
+
+        Assert.That(selection.EnemyStuffGranted, Is.False);
+        Assert.That(weapons.Last(), Is.EqualTo(CsItem.M4A1S));
     }
 }

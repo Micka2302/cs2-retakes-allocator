@@ -750,6 +750,7 @@ public class RetakesAllocator : BasePlugin
             GiveDefuseKit,
             AllocateItemsForPlayer,
             Helpers.IsVip,
+            Helpers.HasEnemyStuffPermission,
             out var currentRoundType
         );
         RoundTypeManager.Instance.SetCurrentRoundType(currentRoundType);

@@ -16,6 +16,7 @@ public class OnRoundPostStartHelper
         Action<T> giveDefuseKit,
         Action<T, ICollection<CsItem>, string?> allocateItemsForPlayer,
         Func<T, bool> isVip,
+        Func<T, bool> hasEnemyStuffPermission,
         out RoundType currentRoundType
     ) where T : notnull
     {
@@ -104,9 +105,15 @@ public class OnRoundPostStartHelper
             }
         }
 
+        var config = Configs.GetConfigData();
+        var enemyStuffGrantedPerTeam = new Dictionary<CsTeam, int>
+        {
+            {CsTeam.Terrorist, 0},
+            {CsTeam.CounterTerrorist, 0},
+        };
+
         if (roundType == RoundType.FullBuy)
         {
-            var config = Configs.GetConfigData();
             var random = new Random();
 
             if (random.NextDouble() * 100 <= config.ChanceForAwpWeapon)
@@ -199,15 +206,28 @@ public class OnRoundPostStartHelper
             };
             var givePreferred = preferredOverride.HasValue;
 
-            items.AddRange(
-                WeaponHelpers.GetWeaponsForRoundType(
-                    roundType,
-                    team,
-                    userSetting,
-                    givePreferred,
-                    preferredOverride
-                )
+            var enemyStuffQuotaAvailable =
+                config.EnableEnemyStuffPreference &&
+                hasEnemyStuffPermission(player) &&
+                userSetting?.EnemyStuffEnabled == true &&
+                team is CsTeam.Terrorist or CsTeam.CounterTerrorist &&
+                (config.MaxEnemyStuffPerTeam < 0 ||
+                 enemyStuffGrantedPerTeam[team] < config.MaxEnemyStuffPerTeam);
+
+            var weaponSelection = WeaponHelpers.GetWeaponsForRoundType(
+                roundType,
+                team,
+                userSetting,
+                givePreferred,
+                enemyStuffQuotaAvailable,
+                preferredOverride
             );
+            items.AddRange(weaponSelection.Weapons);
+
+            if (weaponSelection.EnemyStuffGranted && team is CsTeam.Terrorist or CsTeam.CounterTerrorist)
+            {
+                enemyStuffGrantedPerTeam[team]++;
+            }
 
             if (nadesByPlayer.TryGetValue(player, out var playerNades))
             {
@@ -228,7 +248,7 @@ public class OnRoundPostStartHelper
                 }
             }
 
-            if (Configs.GetConfigData().EnableZeusPreference && userSetting?.ZeusEnabled == true)
+            if (config.EnableZeusPreference && userSetting?.ZeusEnabled == true)
             {
                 items.Add(CsItem.Zeus);
             }

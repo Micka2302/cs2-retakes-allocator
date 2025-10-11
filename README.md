@@ -176,7 +176,8 @@ Here are the weapon configs:
 
 
 - `EnableZeusPreference`: Enables the Zeus toggle in the Kitsune loadout menu. When disabled, no one receives a Zeus and the menu entry is hidden. Defaults to `false`.
-- `EnableEnemyStuffPreference`: Enables the enemy weapon toggle in the Kitsune loadout menu for players with the `@css/vip` permission. Defaults to `false`.
+- `EnableEnemyStuffPreference`: Enables the enemy weapon toggle in the Kitsune loadout menu for players holding the configured permission flag. Defaults to `false`.
+- `EnemyStuffPermission`: Permission flag required to see and toggle enemy weapons when the feature is enabled. Defaults to `@css/vip`.
 - `EnableAllWeaponsForEveryone`: When `true`, Counter-Terrorists and Terrorists can equip each other's primary and secondary weapons while VIP-restricted weapons keep their existing limits. Defaults to `false`.
 - `AllowAwpWeaponForEveryone`: If `true`, everyone can get the AWP. This overrides every other "preferred" weapon
   setting. Defaults to `false`.
@@ -188,6 +189,7 @@ Here are the weapon configs:
 - `ChanceForAwpWeapon`: The % chance that the round will have an AWP.
 - `ChanceForSsgWeapon`: The % chance that the round will have an SSG.
 - `ChanceForEnemyStuff`: The % chance that a player who has enabled enemy weapons will receive gear from the opposing team.
+- `MaxEnemyStuffPerTeam`: Maximum number of players per team who can receive enemy weapons each round. Set to `-1` for no limit.
 
 #### Nade Configuration
 
