@@ -1,6 +1,8 @@
+using System.Linq;
 using CounterStrikeSharp.API.Modules.Utils;
 using RetakesAllocatorCore;
 using RetakesAllocatorCore.Config;
+using RetakesAllocatorCore.Db;
 
 namespace RetakesAllocatorTest;
 
@@ -34,5 +36,37 @@ public class WeaponHelpersTests : BaseTestFixture
 
         Assert.That(weapons, Does.Contain(ak47));
         Assert.That(weapons, Does.Contain(m4a1s));
+    }
+
+    [Test]
+    public void EnemyStuffPreferenceSwapsPrimaryWeapon()
+    {
+        var config = new ConfigData
+        {
+            EnableEnemyStuffPreference = true,
+            ChanceForEnemyStuff = 100,
+            AllowedWeaponSelectionTypes = new List<WeaponSelectionType> { WeaponSelectionType.Default },
+        };
+
+        Configs.OverrideConfigDataForTests(config);
+
+        var userSetting = new UserSetting
+        {
+            EnemyStuffEnabled = true,
+        };
+
+        var weapons = WeaponHelpers.GetWeaponsForRoundType(
+            RoundType.FullBuy,
+            CsTeam.CounterTerrorist,
+            userSetting,
+            givePreferred: false
+        ).ToList();
+
+        var primary = weapons.Last();
+        var terroristPrimaries =
+            WeaponHelpers.GetPossibleWeaponsForAllocationType(WeaponAllocationType.FullBuyPrimary, CsTeam.Terrorist);
+
+        Assert.That(primary, Is.Not.EqualTo(CsItem.M4A1S));
+        Assert.That(terroristPrimaries, Does.Contain(primary));
     }
 }

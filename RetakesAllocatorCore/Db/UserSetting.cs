@@ -27,6 +27,8 @@ public class UserSetting
 
     public bool ZeusEnabled { get; set; } = false;
 
+    public bool EnemyStuffEnabled { get; set; } = false;
+
     public static void Configure(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder

@@ -246,6 +246,7 @@ public record ConfigData
     public bool EnableNextRoundTypeVoting { get; set; } = false;
     public bool EnableAllWeaponsForEveryone { get; set; } = false;
     public bool EnableZeusPreference { get; set; } = false;
+    public bool EnableEnemyStuffPreference { get; set; } = false;
     public int NumberOfExtraVipChancesForAwpWeapon { get; set; } = 1;
     public bool AllowAwpWeaponForEveryone { get; set; } = false;
 
@@ -255,6 +256,8 @@ public record ConfigData
     public double ChanceForAwpWeapon { get; set; } = 100;
 
     public double ChanceForSsgWeapon { get; set; } = 100;
+
+    public double ChanceForEnemyStuff { get; set; } = 0;
 
     public Dictionary<CsTeam, int> MaxAwpWeaponsPerTeam { get; set; } = new()
     {
@@ -297,6 +300,11 @@ public record ConfigData
         if (RoundTypePercentages.Values.Sum() != 100)
         {
             throw new Exception("'RoundTypePercentages' values must add up to 100");
+        }
+
+        if (ChanceForEnemyStuff is < 0 or > 100)
+        {
+            throw new Exception("'ChanceForEnemyStuff' must be between 0 and 100");
         }
 
         var warnings = new List<string>();

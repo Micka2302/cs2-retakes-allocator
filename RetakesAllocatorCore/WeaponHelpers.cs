@@ -772,11 +772,55 @@ public static class WeaponHelpers
             weapon = GetDefaultWeaponForAllocationType(allocationType, team);
         }
 
+        if (weapon is not null)
+        {
+            weapon = MaybeSwapForEnemyStuff(allocationType, team, userSetting, weapon.Value);
+        }
+
         return weapon;
     }
 
     public static bool IsWeaponAllocationAllowed(bool isFreezePeriod)
     {
         return Configs.GetConfigData().AllowAllocationAfterFreezeTime || isFreezePeriod;
+    }
+
+    private static CsItem? MaybeSwapForEnemyStuff(
+        WeaponAllocationType allocationType,
+        CsTeam team,
+        UserSetting? userSetting,
+        CsItem weapon
+    )
+    {
+        var config = Configs.GetConfigData();
+        if (!config.EnableEnemyStuffPreference || config.ChanceForEnemyStuff <= 0)
+        {
+            return weapon;
+        }
+
+        if (userSetting?.EnemyStuffEnabled != true)
+        {
+            return weapon;
+        }
+
+        if (allocationType == WeaponAllocationType.Preferred)
+        {
+            return weapon;
+        }
+
+        if (team is not CsTeam.Terrorist and not CsTeam.CounterTerrorist)
+        {
+            return weapon;
+        }
+
+        if (Random.Shared.NextDouble() * 100 >= config.ChanceForEnemyStuff)
+        {
+            return weapon;
+        }
+
+        var enemyTeam = team == CsTeam.Terrorist ? CsTeam.CounterTerrorist : CsTeam.Terrorist;
+        var enemyWeapon = GetRandomWeaponForAllocationType(allocationType, enemyTeam);
+
+        return enemyWeapon;
     }
 }
