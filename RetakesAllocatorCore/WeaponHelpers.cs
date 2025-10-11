@@ -622,7 +622,8 @@ public static class WeaponHelpers
         RoundType roundType,
         CsTeam team,
         UserSetting? userSetting,
-        bool givePreferred
+        bool givePreferred,
+        CsItem? preferredOverride = null
     )
     {
         WeaponAllocationType? primaryWeaponAllocation =
@@ -653,7 +654,16 @@ public static class WeaponHelpers
             return weapons;
         }
 
-        var primary = GetWeaponForAllocationType(primaryWeaponAllocation.Value, team, userSetting);
+        CsItem? primary;
+        if (primaryWeaponAllocation == WeaponAllocationType.Preferred && preferredOverride.HasValue)
+        {
+            primary = preferredOverride.Value;
+        }
+        else
+        {
+            primary = GetWeaponForAllocationType(primaryWeaponAllocation.Value, team, userSetting);
+        }
+
         if (primary is not null)
         {
             weapons.Add(primary.Value);

@@ -275,6 +275,90 @@ public class WeaponSelectionTests : BaseTestFixture
         Assert.That(allocations[2], Does.Not.Contain(CsItem.Scout));
     }
 
+    [Test]
+    public async Task RandomSniperPreferenceRespectsTeamLimits()
+    {
+        var config = new ConfigData
+        {
+            ChanceForAwpWeapon = 100,
+            ChanceForSsgWeapon = 100,
+            MaxAwpWeaponsPerTeam = new()
+            {
+                {CsTeam.Terrorist, 1},
+                {CsTeam.CounterTerrorist, 1},
+            },
+            MaxSsgWeaponsPerTeam = new()
+            {
+                {CsTeam.Terrorist, 1},
+                {CsTeam.CounterTerrorist, 1},
+            },
+        };
+
+        Configs.OverrideConfigDataForTests(config);
+        RoundTypeManager.Instance.Initialize();
+
+        var players = new List<int> {1, 2, 3, 4};
+
+        foreach (var player in players)
+        {
+            var team = player <= 2 ? CsTeam.Terrorist : CsTeam.CounterTerrorist;
+            await Queries.SetWeaponPreferenceForUserAsync(
+                (ulong)player,
+                team,
+                WeaponAllocationType.Preferred,
+                WeaponHelpers.RandomSniperPreference
+            );
+        }
+
+        try
+        {
+            for (var i = 0; i < 25; i++)
+            {
+                RoundTypeManager.Instance.SetNextRoundTypeOverride(RoundType.FullBuy);
+
+                var allocations = new Dictionary<int, List<CsItem>>();
+                OnRoundPostStartHelper.Handle(
+                    players,
+                    p => (ulong)p,
+                    p => p <= 2 ? CsTeam.Terrorist : CsTeam.CounterTerrorist,
+                    _ => { },
+                    (player, items, _) => { allocations[player] = new(items); },
+                    _ => false,
+                    out var roundType
+                );
+
+                Assert.That(roundType, Is.EqualTo(RoundType.FullBuy));
+
+                int CountTeamItems(Func<int, bool> isTeamPlayer, Func<CsItem, bool> predicate) =>
+                    allocations
+                        .Where(kvp => isTeamPlayer(kvp.Key))
+                        .SelectMany(kvp => kvp.Value)
+                        .Count(predicate);
+
+                var tAwpCount = CountTeamItems(
+                    player => player <= 2,
+                    item => item is CsItem.AWP or CsItem.AutoSniperT or CsItem.AutoSniperCT
+                );
+                var tScoutCount = CountTeamItems(player => player <= 2, item => item == CsItem.Scout);
+
+                var ctAwpCount = CountTeamItems(
+                    player => player > 2,
+                    item => item is CsItem.AWP or CsItem.AutoSniperT or CsItem.AutoSniperCT
+                );
+                var ctScoutCount = CountTeamItems(player => player > 2, item => item == CsItem.Scout);
+
+                Assert.LessOrEqual(tAwpCount, config.MaxAwpWeaponsPerTeam[CsTeam.Terrorist]);
+                Assert.LessOrEqual(tScoutCount, config.MaxSsgWeaponsPerTeam[CsTeam.Terrorist]);
+                Assert.LessOrEqual(ctAwpCount, config.MaxAwpWeaponsPerTeam[CsTeam.CounterTerrorist]);
+                Assert.LessOrEqual(ctScoutCount, config.MaxSsgWeaponsPerTeam[CsTeam.CounterTerrorist]);
+            }
+        }
+        finally
+        {
+            RoundTypeManager.Instance.SetNextRoundTypeOverride(null);
+        }
+    }
+
     private async Task<(Dictionary<int, List<CsItem>> allocations, RoundType roundType)> RunSsgRoundAsync(
         ConfigData configData
     )
