@@ -15,6 +15,7 @@ public class RoundStartTests : BaseTestFixture
             x => {},
             (x, y, z) => {},
             x => false,
+            x => false,
             out _
         );
     }

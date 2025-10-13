@@ -16,6 +16,7 @@ public class OnRoundPostStartHelper
         Action<T> giveDefuseKit,
         Action<T, ICollection<CsItem>, string?> allocateItemsForPlayer,
         Func<T, bool> isVip,
+        Func<T, bool> hasEnemyStuffPermission,
         out RoundType currentRoundType
     ) where T : notnull
     {
@@ -58,12 +59,61 @@ public class OnRoundPostStartHelper
                     preferenceFilter(preferredWeapon))
                 .ToHashSet();
 
-        var tPreferredPlayers = new HashSet<T>();
-        var ctPreferredPlayers = new HashSet<T>();
+        var tPreferredWeapons = new Dictionary<T, CsItem>();
+        var ctPreferredWeapons = new Dictionary<T, CsItem>();
+
+        void AssignPreferredWeapons(
+            Dictionary<T, CsItem> preferredWeapons,
+            IEnumerable<T> eligiblePlayers,
+            Func<IEnumerable<T>, Func<T, bool>, CsTeam, IList<T>> selectPlayers,
+            CsTeam team,
+            Func<CsItem> randomWeaponFactory
+        )
+        {
+            var selectedPlayers = selectPlayers(eligiblePlayers, isVip, team);
+            foreach (var selectedPlayer in selectedPlayers)
+            {
+                if (preferredWeapons.ContainsKey(selectedPlayer))
+                {
+                    continue;
+                }
+
+                var steamId = getSteamId(selectedPlayer);
+                if (!userSettingsByPlayerId.TryGetValue(steamId, out var userSetting))
+                {
+                    continue;
+                }
+
+                var preference =
+                    userSetting.GetWeaponPreference(team, WeaponAllocationType.Preferred);
+                if (preference is null)
+                {
+                    continue;
+                }
+
+                var weapon = preference.Value;
+                if (WeaponHelpers.IsRandomSniperPreference(weapon))
+                {
+                    weapon = randomWeaponFactory();
+                }
+                else if (!WeaponHelpers.IsUsableWeapon(weapon))
+                {
+                    continue;
+                }
+
+                preferredWeapons[selectedPlayer] = weapon;
+            }
+        }
+
+        var config = Configs.GetConfigData();
+        var enemyStuffGrantedPerTeam = new Dictionary<CsTeam, int>
+        {
+            {CsTeam.Terrorist, 0},
+            {CsTeam.CounterTerrorist, 0},
+        };
 
         if (roundType == RoundType.FullBuy)
         {
-            var config = Configs.GetConfigData();
             var random = new Random();
 
             if (random.NextDouble() * 100 <= config.ChanceForAwpWeapon)
@@ -71,24 +121,42 @@ public class OnRoundPostStartHelper
                 var tAwpEligible = FilterPreferredPlayers(tPlayers, WeaponHelpers.IsAwpOrAutoSniperPreference);
                 var ctAwpEligible = FilterPreferredPlayers(ctPlayers, WeaponHelpers.IsAwpOrAutoSniperPreference);
 
-                tPreferredPlayers.UnionWith(
-                    WeaponHelpers.SelectPreferredPlayers(tAwpEligible, isVip, CsTeam.Terrorist)
+                AssignPreferredWeapons(
+                    tPreferredWeapons,
+                    tAwpEligible,
+                    WeaponHelpers.SelectPreferredPlayers,
+                    CsTeam.Terrorist,
+                    () => CsItem.AWP
                 );
-                ctPreferredPlayers.UnionWith(
-                    WeaponHelpers.SelectPreferredPlayers(ctAwpEligible, isVip, CsTeam.CounterTerrorist)
+                AssignPreferredWeapons(
+                    ctPreferredWeapons,
+                    ctAwpEligible,
+                    WeaponHelpers.SelectPreferredPlayers,
+                    CsTeam.CounterTerrorist,
+                    () => CsItem.AWP
                 );
             }
 
             if (random.NextDouble() * 100 <= config.ChanceForSsgWeapon)
             {
-                var tSsgEligible = FilterPreferredPlayers(tPlayers, WeaponHelpers.IsSsgPreference);
-                var ctSsgEligible = FilterPreferredPlayers(ctPlayers, WeaponHelpers.IsSsgPreference);
+                var tSsgEligible = FilterPreferredPlayers(tPlayers, WeaponHelpers.IsSsgPreference)
+                    .Where(player => !tPreferredWeapons.ContainsKey(player));
+                var ctSsgEligible = FilterPreferredPlayers(ctPlayers, WeaponHelpers.IsSsgPreference)
+                    .Where(player => !ctPreferredWeapons.ContainsKey(player));
 
-                tPreferredPlayers.UnionWith(
-                    WeaponHelpers.SelectPreferredSsgPlayers(tSsgEligible, isVip, CsTeam.Terrorist)
+                AssignPreferredWeapons(
+                    tPreferredWeapons,
+                    tSsgEligible,
+                    WeaponHelpers.SelectPreferredSsgPlayers,
+                    CsTeam.Terrorist,
+                    () => CsItem.Scout
                 );
-                ctPreferredPlayers.UnionWith(
-                    WeaponHelpers.SelectPreferredSsgPlayers(ctSsgEligible, isVip, CsTeam.CounterTerrorist)
+                AssignPreferredWeapons(
+                    ctPreferredWeapons,
+                    ctSsgEligible,
+                    WeaponHelpers.SelectPreferredSsgPlayers,
+                    CsTeam.CounterTerrorist,
+                    () => CsItem.Scout
                 );
             }
         }
@@ -126,21 +194,40 @@ public class OnRoundPostStartHelper
                 team == CsTeam.Terrorist ? CsItem.DefaultKnifeT : CsItem.DefaultKnifeCT,
             };
 
-            var givePreferred = team switch
+            CsItem? preferredOverride = team switch
             {
-                CsTeam.Terrorist => tPreferredPlayers.Contains(player),
-                CsTeam.CounterTerrorist => ctPreferredPlayers.Contains(player),
-                _ => false,
+                CsTeam.Terrorist => tPreferredWeapons.TryGetValue(player, out var weapon)
+                    ? weapon
+                    : (CsItem?)null,
+                CsTeam.CounterTerrorist => ctPreferredWeapons.TryGetValue(player, out var weapon)
+                    ? weapon
+                    : (CsItem?)null,
+                _ => null,
             };
+            var givePreferred = preferredOverride.HasValue;
 
-            items.AddRange(
-                WeaponHelpers.GetWeaponsForRoundType(
-                    roundType,
-                    team,
-                    userSetting,
-                    givePreferred
-                )
+            var enemyStuffQuotaAvailable =
+                config.EnableEnemyStuffPreference &&
+                hasEnemyStuffPermission(player) &&
+                userSetting?.EnemyStuffEnabled == true &&
+                team is CsTeam.Terrorist or CsTeam.CounterTerrorist &&
+                (config.MaxEnemyStuffPerTeam < 0 ||
+                 enemyStuffGrantedPerTeam[team] < config.MaxEnemyStuffPerTeam);
+
+            var weaponSelection = WeaponHelpers.GetWeaponsForRoundType(
+                roundType,
+                team,
+                userSetting,
+                givePreferred,
+                enemyStuffQuotaAvailable,
+                preferredOverride
             );
+            items.AddRange(weaponSelection.Weapons);
+
+            if (weaponSelection.EnemyStuffGranted && team is CsTeam.Terrorist or CsTeam.CounterTerrorist)
+            {
+                enemyStuffGrantedPerTeam[team]++;
+            }
 
             if (nadesByPlayer.TryGetValue(player, out var playerNades))
             {
@@ -161,7 +248,7 @@ public class OnRoundPostStartHelper
                 }
             }
 
-            if (Configs.GetConfigData().EnableZeusPreference && userSetting?.ZeusEnabled == true)
+            if (config.EnableZeusPreference && userSetting?.ZeusEnabled == true)
             {
                 items.Add(CsItem.Zeus);
             }

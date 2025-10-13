@@ -29,6 +29,18 @@ public enum ItemSlotType
     Util
 }
 
+public readonly struct WeaponSelectionResult
+{
+    public WeaponSelectionResult(ICollection<CsItem> weapons, bool enemyStuffGranted)
+    {
+        Weapons = weapons;
+        EnemyStuffGranted = enemyStuffGranted;
+    }
+
+    public ICollection<CsItem> Weapons { get; }
+    public bool EnemyStuffGranted { get; }
+}
+
 public static class WeaponHelpers
 {
     private static readonly ICollection<CsItem> _sharedPistols = new HashSet<CsItem>
@@ -618,11 +630,13 @@ public static class WeaponHelpers
         };
     }
 
-    public static ICollection<CsItem> GetWeaponsForRoundType(
+    public static WeaponSelectionResult GetWeaponsForRoundType(
         RoundType roundType,
         CsTeam team,
         UserSetting? userSetting,
-        bool givePreferred
+        bool givePreferred,
+        bool enemyStuffQuotaAvailable = true,
+        CsItem? preferredOverride = null
     )
     {
         WeaponAllocationType? primaryWeaponAllocation =
@@ -642,7 +656,15 @@ public static class WeaponHelpers
         };
 
         var weapons = new List<CsItem>();
-        var secondary = GetWeaponForAllocationType(secondaryWeaponAllocation, team, userSetting);
+        var enemyStuffGranted = false;
+        var secondary = GetWeaponForAllocationType(
+            secondaryWeaponAllocation,
+            team,
+            userSetting,
+            allowEnemySwap: true,
+            enemyStuffQuotaAvailable,
+            ref enemyStuffGranted
+        );
         if (secondary is not null)
         {
             weapons.Add(secondary.Value);
@@ -650,16 +672,32 @@ public static class WeaponHelpers
 
         if (primaryWeaponAllocation is null)
         {
-            return weapons;
+            return new WeaponSelectionResult(weapons, enemyStuffGranted);
         }
 
-        var primary = GetWeaponForAllocationType(primaryWeaponAllocation.Value, team, userSetting);
+        CsItem? primary;
+        if (primaryWeaponAllocation == WeaponAllocationType.Preferred && preferredOverride.HasValue)
+        {
+            primary = preferredOverride.Value;
+        }
+        else
+        {
+            primary = GetWeaponForAllocationType(
+                primaryWeaponAllocation.Value,
+                team,
+                userSetting,
+                allowEnemySwap: true,
+                enemyStuffQuotaAvailable,
+                ref enemyStuffGranted
+            );
+        }
+
         if (primary is not null)
         {
             weapons.Add(primary.Value);
         }
 
-        return weapons;
+        return new WeaponSelectionResult(weapons, enemyStuffGranted);
     }
 
     private static ICollection<CsItem> FindItemsByName(string needle)
@@ -734,8 +772,14 @@ public static class WeaponHelpers
         return Utils.Choice(availableWeapons);
     }
 
-    private static CsItem? GetWeaponForAllocationType(WeaponAllocationType allocationType, CsTeam team,
-        UserSetting? userSetting)
+    private static CsItem? GetWeaponForAllocationType(
+        WeaponAllocationType allocationType,
+        CsTeam team,
+        UserSetting? userSetting,
+        bool allowEnemySwap,
+        bool enemyStuffQuotaAvailable,
+        ref bool enemyStuffGranted
+    )
     {
         CsItem? weapon = null;
 
@@ -762,11 +806,77 @@ public static class WeaponHelpers
             weapon = GetDefaultWeaponForAllocationType(allocationType, team);
         }
 
+        if (allowEnemySwap && weapon is not null)
+        {
+            weapon = MaybeSwapForEnemyStuff(
+                allocationType,
+                team,
+                userSetting,
+                weapon.Value,
+                enemyStuffQuotaAvailable,
+                ref enemyStuffGranted
+            );
+        }
+
         return weapon;
     }
 
     public static bool IsWeaponAllocationAllowed(bool isFreezePeriod)
     {
         return Configs.GetConfigData().AllowAllocationAfterFreezeTime || isFreezePeriod;
+    }
+
+    private static CsItem? MaybeSwapForEnemyStuff(
+        WeaponAllocationType allocationType,
+        CsTeam team,
+        UserSetting? userSetting,
+        CsItem weapon,
+        bool enemyStuffQuotaAvailable,
+        ref bool enemyStuffGranted
+    )
+    {
+        var config = Configs.GetConfigData();
+        if (!config.EnableEnemyStuffPreference || config.ChanceForEnemyStuff <= 0)
+        {
+            return weapon;
+        }
+
+        if (!enemyStuffQuotaAvailable)
+        {
+            return weapon;
+        }
+
+        if (userSetting?.EnemyStuffEnabled != true)
+        {
+            return weapon;
+        }
+
+        if (team is not CsTeam.Terrorist and not CsTeam.CounterTerrorist)
+        {
+            return weapon;
+        }
+
+        if (Random.Shared.NextDouble() * 100 >= config.ChanceForEnemyStuff)
+        {
+            return weapon;
+        }
+
+        var enemyTeam = team == CsTeam.Terrorist ? CsTeam.CounterTerrorist : CsTeam.Terrorist;
+        var enemyWeapon = GetWeaponForAllocationType(
+                allocationType,
+                enemyTeam,
+                userSetting,
+                allowEnemySwap: false,
+                enemyStuffQuotaAvailable: true,
+                ref enemyStuffGranted
+            )
+            ?? GetRandomWeaponForAllocationType(allocationType, enemyTeam);
+
+        if (!enemyWeapon.Equals(weapon))
+        {
+            enemyStuffGranted = true;
+        }
+
+        return enemyWeapon;
     }
 }

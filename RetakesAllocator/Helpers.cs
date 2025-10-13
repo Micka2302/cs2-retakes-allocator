@@ -202,6 +202,28 @@ public static class Helpers
 
     public static bool IsVip(CCSPlayerController player) => AdminManager.PlayerHasPermissions(player, "@css/vip");
 
+    public static bool PlayerHasPermission(CCSPlayerController player, string? permission)
+    {
+        if (string.IsNullOrWhiteSpace(permission))
+        {
+            return false;
+        }
+
+        return AdminManager.PlayerHasPermissions(player, permission) ||
+               AdminManager.PlayerHasPermissions(player, "@css/root");
+    }
+
+    public static bool HasEnemyStuffPermission(CCSPlayerController player)
+    {
+        var permission = Configs.GetConfigData().EnemyStuffPermission;
+        if (string.IsNullOrWhiteSpace(permission))
+        {
+            return true;
+        }
+
+        return PlayerHasPermission(player, permission);
+    }
+
     public static async Task<bool> DownloadMissingFiles()
     {
         if (!Configs.GetConfigData().AutoUpdateSignatures)

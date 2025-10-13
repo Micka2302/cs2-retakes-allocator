@@ -147,7 +147,8 @@ public class AdvancedGunMenu
             CurrentSecondary = currentSecondary,
             CurrentPistol = currentPistol,
             PreferredSniper = preferredSniper,
-            ZeusEnabled = userSettings?.ZeusEnabled ?? false
+            ZeusEnabled = userSettings?.ZeusEnabled ?? false,
+            EnemyStuffEnabled = userSettings?.EnemyStuffEnabled ?? false
         };
     }
 
@@ -158,8 +159,13 @@ public class AdvancedGunMenu
 
         var config = Configs.GetConfigData();
         var isVip = Helpers.IsVip(player);
+        var canUseEnemyStuff = config.EnableEnemyStuffPreference && Helpers.HasEnemyStuffPermission(player);
         var visibleItems = 3;
         if (isVip)
+        {
+            visibleItems++;
+        }
+        if (canUseEnemyStuff)
         {
             visibleItems++;
         }
@@ -248,6 +254,23 @@ public class AdvancedGunMenu
 
             menuBuilder.AddChoice(sniperLabel, sniperChoices, defaultSniperChoice,
                 (ply, choice) => HandleSniperChoice(ply, data, choice, sniperChoices), MenuTextSize.Large);
+        }
+        if (canUseEnemyStuff)
+        {
+            var enemyStuffChoices = new[]
+            {
+                Translator.Instance["guns_menu.zeus_choice_disable"],
+                Translator.Instance["guns_menu.zeus_choice_enable"]
+            };
+
+            var defaultEnemyStuffChoice = data.EnemyStuffEnabled ? enemyStuffChoices[1] : enemyStuffChoices[0];
+
+            menuBuilder.AddChoice(
+                Translator.Instance["guns_menu.enemy_stuff_label"],
+                enemyStuffChoices,
+                defaultEnemyStuffChoice,
+                (ply, choice) => HandleEnemyStuffChoice(ply, data, choice, enemyStuffChoices),
+                MenuTextSize.Large);
         }
         if (config.EnableZeusPreference)
         {
@@ -365,6 +388,26 @@ public class AdvancedGunMenu
         var messageKey = enabled ? "guns_menu.zeus_enabled_message" : "guns_menu.zeus_disabled_message";
         Helpers.WriteNewlineDelimited(Translator.Instance[messageKey], player.PrintToChat);
     }
+    private void HandleEnemyStuffChoice(CCSPlayerController player, GunMenuData data, string choice, IReadOnlyList<string> options)
+    {
+        if (!Helpers.HasEnemyStuffPermission(player))
+        {
+            Helpers.WriteNewlineDelimited(Translator.Instance["weapon_preference.only_vip_can_use"], player.PrintToChat);
+            return;
+        }
+
+        var enabled = choice == options[1];
+        if (data.EnemyStuffEnabled == enabled)
+        {
+            return;
+        }
+
+        data.EnemyStuffEnabled = enabled;
+        Queries.SetEnemyStuffPreference(data.SteamId, enabled);
+
+        var messageKey = enabled ? "guns_menu.enemy_stuff_enabled_message" : "guns_menu.enemy_stuff_disabled_message";
+        Helpers.WriteNewlineDelimited(Translator.Instance[messageKey], player.PrintToChat);
+    }
     private void ApplySniperPreference(CCSPlayerController player, GunMenuData data, CsItem? preference)
     {
         var steamId = data.SteamId;
@@ -436,6 +479,7 @@ public class AdvancedGunMenu
         public CsItem? CurrentPistol { get; set; }
         public CsItem? PreferredSniper { get; set; }
         public bool ZeusEnabled { get; set; }
+        public bool EnemyStuffEnabled { get; set; }
     }
 }
 
