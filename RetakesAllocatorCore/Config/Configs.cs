@@ -246,6 +246,12 @@ public record ConfigData
     public bool EnableNextRoundTypeVoting { get; set; } = false;
     public bool EnableAllWeaponsForEveryone { get; set; } = false;
     public bool EnableZeusPreference { get; set; } = false;
+    public double ChanceForZeusWeapon { get; set; } = 100;
+    public Dictionary<CsTeam, int> MaxZeusPerTeam { get; set; } = new()
+    {
+        {CsTeam.Terrorist, 2},
+        {CsTeam.CounterTerrorist, 2},
+    };
     public bool EnableEnemyStuffPreference { get; set; } = false;
     public string EnemyStuffPermission { get; set; } = "@css/vip";
     public int NumberOfExtraVipChancesForAwpWeapon { get; set; } = 1;
@@ -309,9 +315,22 @@ public record ConfigData
             throw new Exception("'ChanceForEnemyStuff' must be between 0 and 100");
         }
 
+        if (ChanceForZeusWeapon is < 0 or > 100)
+        {
+            throw new Exception("'ChanceForZeusWeapon' must be between 0 and 100");
+        }
+
         if (MaxEnemyStuffPerTeam < -1)
         {
             throw new Exception("'MaxEnemyStuffPerTeam' must be -1 (for unlimited) or a non-negative number");
+        }
+
+        foreach (var (team, maxZeus) in MaxZeusPerTeam)
+        {
+            if (maxZeus < 0)
+            {
+                throw new Exception($"'MaxZeusPerTeam.{team}' must be a non-negative number");
+            }
         }
 
         var warnings = new List<string>();
