@@ -1,0 +1,61 @@
+{
+  "_comment": "Minecraft NeoForge server egg for Pterodactyl",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": null
+  },
+  "exported_at": "2025-10-25T19:53:00+00:00",
+  "name": "Minecraft - NeoForge",
+  "author": "OpenAI Assistant",
+  "description": "Installs and runs a Minecraft server using the NeoForge modding platform on Linux.",
+  "features": null,
+  "docker_images": {
+    "Java 17": "ghcr.io/pterodactyl/yolks:java_17",
+    "Java 21": "ghcr.io/pterodactyl/yolks:java_21"
+  },
+  "file_denylist": [],
+  "startup": "java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar {{SERVER_JARFILE}} nogui",
+  "config": {
+    "files": "{}",
+    "startup": "{\n    \"done\": \"Done (.*)! For help, type \\\"help\\\"\"\n}",
+    "logs": "{}",
+    "stop": "stop"
+  },
+  "scripts": {
+    "installation": {
+      "script": "#!/bin/bash\nset -e\ncd /mnt/server\n\nMINECRAFT_VERSION=\"${MINECRAFT_VERSION:-1.20.1}\"\nNEOFORGE_VERSION=\"${NEOFORGE_VERSION:-20.4.139-beta}\"\nINSTALLER_URL=\"https://maven.neoforged.net/releases/net/neoforged/neoforge/${NEOFORGE_VERSION}/neoforge-${NEOFORGE_VERSION}-installer.jar\"\nINSTALLER_FILE=\"neoforge-${NEOFORGE_VERSION}-installer.jar\"\n\necho \"Downloading NeoForge ${NEOFORGE_VERSION} for Minecraft ${MINECRAFT_VERSION}...\"\ncurl -fSL -o \"${INSTALLER_FILE}\" \"${INSTALLER_URL}\"\n\necho \"Running NeoForge installer...\"\njava -jar \"${INSTALLER_FILE}\" --installServer\n\necho \"Cleaning up installer...\"\nrm -f \"${INSTALLER_FILE}\"\n\nDEFAULT_JAR=\"neoforge-${NEOFORGE_VERSION}-universal.jar\"\nFOUND_JAR=$(find . -maxdepth 1 -type f -name \"neoforge-*universal.jar\" | head -n 1)\nif [[ -n \"${FOUND_JAR}\" && ! -f \"${DEFAULT_JAR}\" ]]; then\n  mv \"${FOUND_JAR}\" \"${DEFAULT_JAR}\"\nfi\n\nif [[ -n \"${SERVER_JARFILE}\" && \"${SERVER_JARFILE}\" != \"${DEFAULT_JAR}\" ]]; then\n  mv -f \"${DEFAULT_JAR}\" \"${SERVER_JARFILE}\"\nelse\n  export SERVER_JARFILE=\"${DEFAULT_JAR}\"\nfi\n\nif [[ ! -f eula.txt ]]; then\n  echo \"eula=true\" > eula.txt\nfi\n\nrm -f run.sh run.bat\n",
+      "container": "ghcr.io/pterodactyl/installers:debian",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Minecraft Version",
+      "description": "Version of Minecraft the server will target.",
+      "env_variable": "MINECRAFT_VERSION",
+      "default_value": "1.20.1",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:20"
+    },
+    {
+      "name": "NeoForge Version",
+      "description": "NeoForge build to install (must exist on the NeoForged Maven repository).",
+      "env_variable": "NEOFORGE_VERSION",
+      "default_value": "20.4.139-beta",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:40"
+    },
+    {
+      "name": "Server Jar File",
+      "description": "Name of the jar the panel will run. Usually the generated universal jar.",
+      "env_variable": "SERVER_JARFILE",
+      "default_value": "neoforge-20.4.139-beta-universal.jar",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:100"
+    }
+  ],
+  "capabilities": []
+}
