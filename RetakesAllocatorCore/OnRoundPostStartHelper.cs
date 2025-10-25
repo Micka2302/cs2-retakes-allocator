@@ -106,7 +106,13 @@ public class OnRoundPostStartHelper
         }
 
         var config = Configs.GetConfigData();
+        var random = new Random();
         var enemyStuffGrantedPerTeam = new Dictionary<CsTeam, int>
+        {
+            {CsTeam.Terrorist, 0},
+            {CsTeam.CounterTerrorist, 0},
+        };
+        var zeusGrantedPerTeam = new Dictionary<CsTeam, int>
         {
             {CsTeam.Terrorist, 0},
             {CsTeam.CounterTerrorist, 0},
@@ -114,8 +120,6 @@ public class OnRoundPostStartHelper
 
         if (roundType == RoundType.FullBuy)
         {
-            var random = new Random();
-
             if (random.NextDouble() * 100 <= config.ChanceForAwpWeapon)
             {
                 var tAwpEligible = FilterPreferredPlayers(tPlayers, WeaponHelpers.IsAwpOrAutoSniperPreference);
@@ -248,9 +252,20 @@ public class OnRoundPostStartHelper
                 }
             }
 
-            if (config.EnableZeusPreference && userSetting?.ZeusEnabled == true)
+            if (config.EnableZeusPreference && userSetting?.ZeusEnabled == true &&
+                team is CsTeam.Terrorist or CsTeam.CounterTerrorist)
             {
-                items.Add(CsItem.Zeus);
+                var maxZeusForTeam = config.MaxZeusPerTeam.TryGetValue(team, out var limit)
+                    ? limit
+                    : 0;
+                if (maxZeusForTeam > 0 &&
+                    zeusGrantedPerTeam.TryGetValue(team, out var currentCount) &&
+                    currentCount < maxZeusForTeam &&
+                    random.NextDouble() * 100 <= config.ChanceForZeusWeapon)
+                {
+                    items.Add(CsItem.Zeus);
+                    zeusGrantedPerTeam[team] = currentCount + 1;
+                }
             }
 
             allocateItemsForPlayer(player, items, team == CsTeam.Terrorist ? "slot5" : "slot1");
