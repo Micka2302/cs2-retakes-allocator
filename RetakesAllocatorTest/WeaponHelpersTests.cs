@@ -56,7 +56,7 @@ public class WeaponHelpersTests : BaseTestFixture
 
         var userSetting = new UserSetting
         {
-            EnemyStuffEnabled = true,
+            EnemyStuffTeamPreference = EnemyStuffTeamPreference.CounterTerrorist,
         };
         userSetting.SetWeaponPreference(
             CsTeam.Terrorist,
@@ -105,7 +105,7 @@ public class WeaponHelpersTests : BaseTestFixture
 
         var userSetting = new UserSetting
         {
-            EnemyStuffEnabled = true,
+            EnemyStuffTeamPreference = EnemyStuffTeamPreference.CounterTerrorist,
         };
         userSetting.SetWeaponPreference(
             CsTeam.Terrorist,
@@ -133,6 +133,57 @@ public class WeaponHelpersTests : BaseTestFixture
     }
 
     [Test]
+    public void EnemyStuffPreferenceHonorsSelectedTeams()
+    {
+        var config = new ConfigData
+        {
+            EnableEnemyStuffPreference = true,
+            ChanceForEnemyStuff = 100,
+            AllowedWeaponSelectionTypes = new List<WeaponSelectionType>
+            {
+                WeaponSelectionType.PlayerChoice,
+                WeaponSelectionType.Default
+            },
+        };
+
+        Configs.OverrideConfigDataForTests(config);
+
+        var userSetting = new UserSetting
+        {
+            EnemyStuffTeamPreference = EnemyStuffTeamPreference.Terrorist,
+        };
+        userSetting.SetWeaponPreference(
+            CsTeam.Terrorist,
+            WeaponAllocationType.FullBuyPrimary,
+            CsItem.Galil
+        );
+        userSetting.SetWeaponPreference(
+            CsTeam.CounterTerrorist,
+            WeaponAllocationType.FullBuyPrimary,
+            CsItem.M4A1S
+        );
+
+        var ctSelection = WeaponHelpers.GetWeaponsForRoundType(
+            RoundType.FullBuy,
+            CsTeam.CounterTerrorist,
+            userSetting,
+            givePreferred: false
+        );
+
+        Assert.That(ctSelection.EnemyStuffGranted, Is.False);
+
+        var terroristSelection = WeaponHelpers.GetWeaponsForRoundType(
+            RoundType.FullBuy,
+            CsTeam.Terrorist,
+            userSetting,
+            givePreferred: false
+        );
+
+        Assert.That(terroristSelection.EnemyStuffGranted, Is.True);
+        Assert.That(terroristSelection.Weapons.Last(), Is.EqualTo(CsItem.M4A1S));
+    }
+
+    [Test]
     public void EnemyStuffQuotaBlocksSwapWhenUnavailable()
     {
         var config = new ConfigData
@@ -150,7 +201,7 @@ public class WeaponHelpersTests : BaseTestFixture
 
         var userSetting = new UserSetting
         {
-            EnemyStuffEnabled = true,
+            EnemyStuffTeamPreference = EnemyStuffTeamPreference.CounterTerrorist,
         };
         userSetting.SetWeaponPreference(
             CsTeam.Terrorist,

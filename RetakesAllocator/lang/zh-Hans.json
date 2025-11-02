@@ -1,4 +1,4 @@
-{
+﻿{
   "roundtype.Pistol": "手枪",
   "roundtype.HalfBuy": "半购买",
   "roundtype.FullBuy": "全购买",
@@ -41,6 +41,15 @@
   "guns_menu.sniper_ssg": "SSG 启用",
   "guns_menu.sniper_random": "Random",
   "guns_menu.sniper_disabled": "已禁用",
+  "guns_menu.enemy_stuff_label": "敌方武器",
+  "guns_menu.enemy_stuff_choice_disable": "禁用",
+  "guns_menu.enemy_stuff_choice_t_only": "启用（仅限 T）",
+  "guns_menu.enemy_stuff_choice_ct_only": "启用（仅限 CT）",
+  "guns_menu.enemy_stuff_choice_both": "启用（双方阵营）",
+  "guns_menu.enemy_stuff_enabled_t_message": "你在担任恐怖分子时将有机会获得敌方武器。",
+  "guns_menu.enemy_stuff_enabled_ct_message": "你在担任反恐精英时将有机会获得敌方武器。",
+  "guns_menu.enemy_stuff_enabled_both_message": "你在双方阵营时都将有机会获得敌方武器。",
+  "guns_menu.enemy_stuff_disabled_message": "你将不再获得敌方武器。",
   "guns_menu.zeus_label": "?????",
   "guns_menu.zeus_choice_enable": "??",
   "guns_menu.zeus_choice_disable": "??",

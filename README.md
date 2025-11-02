@@ -176,7 +176,7 @@ Here are the weapon configs:
 
 
 - `EnableZeusPreference`: Enables the Zeus toggle in the Kitsune loadout menu. When disabled, no one receives a Zeus and the menu entry is hidden. Defaults to `false`.
-- `EnableEnemyStuffPreference`: Enables the enemy weapon toggle in the Kitsune loadout menu for players holding the configured permission flag. Defaults to `false`.
+- `EnableEnemyStuffPreference`: Enables the enemy weapon toggle in the Kitsune loadout menu for players holding the configured permission flag. Players can enable enemy weapons separately for Terrorist, Counter-Terrorist, or both teams. Defaults to `false`.
 - `EnemyStuffPermission`: Permission flag required to see and toggle enemy weapons when the feature is enabled. Defaults to `@css/vip`.
 - `EnableAllWeaponsForEveryone`: When `true`, Counter-Terrorists and Terrorists can equip each other's primary and secondary weapons while VIP-restricted weapons keep their existing limits. Defaults to `false`.
 - `AllowAwpWeaponForEveryone`: If `true`, everyone can get the AWP. This overrides every other "preferred" weapon

@@ -213,7 +213,8 @@ public class OnRoundPostStartHelper
             var enemyStuffQuotaAvailable =
                 config.EnableEnemyStuffPreference &&
                 hasEnemyStuffPermission(player) &&
-                userSetting?.EnemyStuffEnabled == true &&
+                userSetting is not null &&
+                userSetting.IsEnemyStuffEnabledForTeam(team) &&
                 team is CsTeam.Terrorist or CsTeam.CounterTerrorist &&
                 (config.MaxEnemyStuffPerTeam < 0 ||
                  enemyStuffGrantedPerTeam[team] < config.MaxEnemyStuffPerTeam);
