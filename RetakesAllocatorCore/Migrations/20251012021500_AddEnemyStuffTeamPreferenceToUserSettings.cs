@@ -14,10 +14,7 @@ namespace RetakesAllocator.Migrations
             if (ActiveProvider.Contains("MySql", StringComparison.OrdinalIgnoreCase))
             {
                 migrationBuilder.Sql(
-                    """
-ALTER TABLE `UserSettings`
-ADD COLUMN IF NOT EXISTS `EnemyStuffTeamPreference` INT NOT NULL DEFAULT 0
-""");
+                    "ALTER TABLE `UserSettings`\nADD COLUMN IF NOT EXISTS `EnemyStuffTeamPreference` INT NOT NULL DEFAULT 0;");
             }
             else
             {
@@ -31,24 +28,13 @@ ADD COLUMN IF NOT EXISTS `EnemyStuffTeamPreference` INT NOT NULL DEFAULT 0
 
             migrationBuilder.Sql(
                 ActiveProvider.Contains("MySql", StringComparison.OrdinalIgnoreCase)
-                    ? """
-UPDATE `UserSettings`
-SET `EnemyStuffTeamPreference` = 3
-WHERE `EnemyStuffEnabled` = 1
-"""
-                    : """
-UPDATE "UserSettings"
-SET "EnemyStuffTeamPreference" = 3
-WHERE "EnemyStuffEnabled" = 1
-""");
+                    ? "UPDATE `UserSettings`\nSET `EnemyStuffTeamPreference` = 3\nWHERE `EnemyStuffEnabled` = 1;"
+                    : "UPDATE \"UserSettings\"\nSET \"EnemyStuffTeamPreference\" = 3\nWHERE \"EnemyStuffEnabled\" = 1;");
 
             if (ActiveProvider.Contains("MySql", StringComparison.OrdinalIgnoreCase))
             {
                 migrationBuilder.Sql(
-                    """
-ALTER TABLE `UserSettings`
-DROP COLUMN IF EXISTS `EnemyStuffEnabled`
-""");
+                    "ALTER TABLE `UserSettings`\nDROP COLUMN IF EXISTS `EnemyStuffEnabled`;");
             }
             else
             {
@@ -64,10 +50,7 @@ DROP COLUMN IF EXISTS `EnemyStuffEnabled`
             if (ActiveProvider.Contains("MySql", StringComparison.OrdinalIgnoreCase))
             {
                 migrationBuilder.Sql(
-                    """
-ALTER TABLE `UserSettings`
-ADD COLUMN IF NOT EXISTS `EnemyStuffEnabled` TINYINT(1) NOT NULL DEFAULT 0
-""");
+                    "ALTER TABLE `UserSettings`\nADD COLUMN IF NOT EXISTS `EnemyStuffEnabled` TINYINT(1) NOT NULL DEFAULT 0;");
             }
             else
             {
@@ -81,28 +64,13 @@ ADD COLUMN IF NOT EXISTS `EnemyStuffEnabled` TINYINT(1) NOT NULL DEFAULT 0
 
             migrationBuilder.Sql(
                 ActiveProvider.Contains("MySql", StringComparison.OrdinalIgnoreCase)
-                    ? """
-UPDATE `UserSettings`
-SET `EnemyStuffEnabled` = CASE
-    WHEN (`EnemyStuffTeamPreference` & 3) <> 0 THEN 1
-    ELSE 0
-END
-"""
-                    : """
-UPDATE "UserSettings"
-SET "EnemyStuffEnabled" = CASE
-    WHEN ("EnemyStuffTeamPreference" & 3) <> 0 THEN 1
-    ELSE 0
-END
-""");
+                    ? "UPDATE `UserSettings`\nSET `EnemyStuffEnabled` = CASE\n    WHEN (`EnemyStuffTeamPreference` & 3) <> 0 THEN 1\n    ELSE 0\nEND;"
+                    : "UPDATE \"UserSettings\"\nSET \"EnemyStuffEnabled\" = CASE\n    WHEN (\"EnemyStuffTeamPreference\" & 3) <> 0 THEN 1\n    ELSE 0\nEND;");
 
             if (ActiveProvider.Contains("MySql", StringComparison.OrdinalIgnoreCase))
             {
                 migrationBuilder.Sql(
-                    """
-ALTER TABLE `UserSettings`
-DROP COLUMN IF EXISTS `EnemyStuffTeamPreference`
-""");
+                    "ALTER TABLE `UserSettings`\nDROP COLUMN IF EXISTS `EnemyStuffTeamPreference`;");
             }
             else
             {

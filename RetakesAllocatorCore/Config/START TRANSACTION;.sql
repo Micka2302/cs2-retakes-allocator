@@ -1,0 +1,21 @@
+START TRANSACTION;
+
+ALTER TABLE `UserSettings`
+    MODIFY COLUMN `UserId` BIGINT UNSIGNED NOT NULL;
+
+ALTER TABLE `UserSettings`
+    MODIFY COLUMN `WeaponPreferences` LONGTEXT NULL;
+
+ALTER TABLE `UserSettings`
+    ADD COLUMN IF NOT EXISTS `ZeusEnabled` TINYINT(1) NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS `EnemyStuffEnabled` TINYINT(1) NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS `EnemyStuffTeamPreference` INT NOT NULL DEFAULT 0;
+
+UPDATE `UserSettings`
+SET `EnemyStuffTeamPreference` = 3
+WHERE `EnemyStuffEnabled` = 1;
+
+ALTER TABLE `UserSettings`
+    DROP COLUMN IF EXISTS `EnemyStuffEnabled`;
+
+COMMIT;
