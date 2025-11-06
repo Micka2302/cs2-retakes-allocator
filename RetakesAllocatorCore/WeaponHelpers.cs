@@ -846,7 +846,7 @@ public static class WeaponHelpers
             return weapon;
         }
 
-        if (userSetting?.EnemyStuffEnabled != true)
+        if (userSetting is null || !userSetting.IsEnemyStuffEnabledForTeam(team))
         {
             return weapon;
         }

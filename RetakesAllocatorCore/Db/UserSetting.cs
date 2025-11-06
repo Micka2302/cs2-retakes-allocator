@@ -6,6 +6,7 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using RetakesAllocatorCore.Config;
 
 namespace RetakesAllocatorCore.Db;
 
@@ -27,13 +28,25 @@ public class UserSetting
 
     public bool ZeusEnabled { get; set; } = false;
 
-    public bool EnemyStuffEnabled { get; set; } = false;
+    public EnemyStuffTeamPreference EnemyStuffTeamPreference { get; set; } = EnemyStuffTeamPreference.None;
 
     public static void Configure(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder
             .Properties<WeaponPreferencesType>()
             .HaveConversion<WeaponPreferencesConverter, WeaponPreferencesComparer>();
+    }
+
+    public bool IsEnemyStuffEnabledForTeam(CsTeam team)
+    {
+        return EnemyStuffTeamPreference switch
+        {
+            EnemyStuffTeamPreference.Terrorist => team == CsTeam.Terrorist,
+            EnemyStuffTeamPreference.CounterTerrorist => team == CsTeam.CounterTerrorist,
+            EnemyStuffTeamPreference.Both =>
+                team is CsTeam.Terrorist or CsTeam.CounterTerrorist,
+            _ => false,
+        };
     }
 
     public void SetWeaponPreference(CsTeam team, WeaponAllocationType weaponAllocationType, CsItem? weapon)

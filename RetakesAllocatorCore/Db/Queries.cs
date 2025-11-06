@@ -1,6 +1,7 @@
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.EntityFrameworkCore;
+using RetakesAllocatorCore.Config;
 
 namespace RetakesAllocatorCore.Db;
 
@@ -91,14 +92,14 @@ public class Queries
         Task.Run(async () => { await SetZeusPreferenceAsync(userId, enabled); });
     }
 
-    public static async Task SetEnemyStuffPreferenceAsync(ulong userId, bool enabled)
+    public static async Task SetEnemyStuffPreferenceAsync(ulong userId, EnemyStuffTeamPreference preference)
     {
-        await UpsertUserSettings(userId, userSetting => { userSetting.EnemyStuffEnabled = enabled; });
+        await UpsertUserSettings(userId, userSetting => { userSetting.EnemyStuffTeamPreference = preference; });
     }
 
-    public static void SetEnemyStuffPreference(ulong userId, bool enabled)
+    public static void SetEnemyStuffPreference(ulong userId, EnemyStuffTeamPreference preference)
     {
-        Task.Run(async () => { await SetEnemyStuffPreferenceAsync(userId, enabled); });
+        Task.Run(async () => { await SetEnemyStuffPreferenceAsync(userId, preference); });
     }
     public static IDictionary<ulong, UserSetting> GetUsersSettings(ICollection<ulong> userIds)
     {
