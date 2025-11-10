@@ -1,7 +1,5 @@
 # CS2 Retakes Allocator
 
-[![Build RetakesAllocator.zip](https://github.com/yonilerner/cs2-retakes-allocator/actions/workflows/build.yml/badge.svg)](https://github.com/yonilerner/cs2-retakes-allocator/actions/workflows/build.yml)
-
 ## Retakes
 
 This plugin is made to run alongside B3none's retakes implementation: https://github.com/b3none/cs2-retakes
@@ -10,7 +8,7 @@ This plugin is made to run alongside B3none's retakes implementation: https://gi
 
 - Ensure you have https://github.com/b3none/cs2-retakes installed already
 - Update the `RetakesPlugin` config to have `EnableFallbackAllocation` disabled
-- Download a release from https://github.com/yonilerner/cs2-retakes-allocator/releases
+- Download a release from https://github.com/Micka2302/cs2-retakes-allocator-2.0
 - Extract the zip archive and upload the `RetakesAllocator` plugin to your CounterStrikeSharp plugins folder on your
   server
     - Each build comes with two necessary runtimes for sqlite3, one for linux64 and one for win64. If you need a
