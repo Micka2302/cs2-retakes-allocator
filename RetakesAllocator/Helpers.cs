@@ -233,7 +233,7 @@ public static class Helpers
         string baseFolderPath = Configs.Shared.Module!;
 
         string gamedataFileName = "gamedata/RetakesAllocator_gamedata.json";
-        string gamedataGithubUrl = "https://raw.githubusercontent.com/yonilerner/cs2-retakes-allocator/main/Resources/RetakesAllocator_gamedata.json";
+        string gamedataGithubUrl = "https://raw.githubusercontent.com/Micka2302/cs2-retakes-allocator-2.0/main/Resources/RetakesAllocator_gamedata.json";
         string gamedataFilePath = Path.Combine(baseFolderPath, gamedataFileName);
         string gamedataDirectoryPath = Path.GetDirectoryName(gamedataFilePath)!;
         
