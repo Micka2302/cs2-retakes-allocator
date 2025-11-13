@@ -1,5 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using RetakesAllocatorCore.Db;
 
 #nullable disable
 
@@ -11,10 +12,15 @@ namespace RetakesAllocator.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            if (ActiveProvider.Contains("MySql", StringComparison.OrdinalIgnoreCase))
+            var isMySql = ActiveProvider.Contains("MySql", StringComparison.OrdinalIgnoreCase);
+            
+            if (isMySql)
             {
                 migrationBuilder.Sql(
-                    "ALTER TABLE `UserSettings`\nADD COLUMN IF NOT EXISTS `EnemyStuffTeamPreference` INT NOT NULL DEFAULT 0;");
+                    MySqlColumnSqlHelper.BuildAddColumnIfMissingSql(
+                        "UserSettings",
+                        "EnemyStuffTeamPreference",
+                        "INT NOT NULL DEFAULT 0"));
             }
             else
             {
@@ -27,14 +33,14 @@ namespace RetakesAllocator.Migrations
             }
 
             migrationBuilder.Sql(
-                ActiveProvider.Contains("MySql", StringComparison.OrdinalIgnoreCase)
+                isMySql
                     ? "UPDATE `UserSettings`\nSET `EnemyStuffTeamPreference` = 3\nWHERE `EnemyStuffEnabled` = 1;"
                     : "UPDATE \"UserSettings\"\nSET \"EnemyStuffTeamPreference\" = 3\nWHERE \"EnemyStuffEnabled\" = 1;");
 
-            if (ActiveProvider.Contains("MySql", StringComparison.OrdinalIgnoreCase))
+            if (isMySql)
             {
                 migrationBuilder.Sql(
-                    "ALTER TABLE `UserSettings`\nDROP COLUMN IF EXISTS `EnemyStuffEnabled`;");
+                    MySqlColumnSqlHelper.BuildDropColumnIfExistsSql("UserSettings", "EnemyStuffEnabled"));
             }
             else
             {
@@ -47,10 +53,15 @@ namespace RetakesAllocator.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            if (ActiveProvider.Contains("MySql", StringComparison.OrdinalIgnoreCase))
+            var isMySql = ActiveProvider.Contains("MySql", StringComparison.OrdinalIgnoreCase);
+            
+            if (isMySql)
             {
                 migrationBuilder.Sql(
-                    "ALTER TABLE `UserSettings`\nADD COLUMN IF NOT EXISTS `EnemyStuffEnabled` TINYINT(1) NOT NULL DEFAULT 0;");
+                    MySqlColumnSqlHelper.BuildAddColumnIfMissingSql(
+                        "UserSettings",
+                        "EnemyStuffEnabled",
+                        "TINYINT(1) NOT NULL DEFAULT 0"));
             }
             else
             {
@@ -63,14 +74,14 @@ namespace RetakesAllocator.Migrations
             }
 
             migrationBuilder.Sql(
-                ActiveProvider.Contains("MySql", StringComparison.OrdinalIgnoreCase)
+                isMySql
                     ? "UPDATE `UserSettings`\nSET `EnemyStuffEnabled` = CASE\n    WHEN (`EnemyStuffTeamPreference` & 3) <> 0 THEN 1\n    ELSE 0\nEND;"
                     : "UPDATE \"UserSettings\"\nSET \"EnemyStuffEnabled\" = CASE\n    WHEN (\"EnemyStuffTeamPreference\" & 3) <> 0 THEN 1\n    ELSE 0\nEND;");
 
-            if (ActiveProvider.Contains("MySql", StringComparison.OrdinalIgnoreCase))
+            if (isMySql)
             {
                 migrationBuilder.Sql(
-                    "ALTER TABLE `UserSettings`\nDROP COLUMN IF EXISTS `EnemyStuffTeamPreference`;");
+                    MySqlColumnSqlHelper.BuildDropColumnIfExistsSql("UserSettings", "EnemyStuffTeamPreference"));
             }
             else
             {
