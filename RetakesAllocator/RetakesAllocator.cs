@@ -45,6 +45,7 @@ public class RetakesAllocator : BasePlugin
     private string _bombsite = "";
     private bool _announceBombsite;
     private bool _bombsiteAnnounceOneTime;
+    private bool _weaponDataSignatureFailed;
 
     #region Setup
 
@@ -485,8 +486,25 @@ public class RetakesAllocator : BasePlugin
             return RetStop();
         }
 
-        var weaponData = CustomFunctions.GetCSWeaponDataFromKeyFunc?.Invoke(-1,
-            hook.GetParam<CEconItemView>(1).ItemDefinitionIndex.ToString());
+        if (_weaponDataSignatureFailed)
+        {
+            return HookResult.Continue;
+        }
+
+        CCSWeaponBaseVData? weaponData = null;
+        try
+        {
+            weaponData = CustomFunctions.GetCSWeaponDataFromKeyFunc?.Invoke(-1,
+                hook.GetParam<CEconItemView>(1).ItemDefinitionIndex.ToString());
+        }
+        catch (NativeException ex)
+        {
+            _weaponDataSignatureFailed = true;
+            CustomFunctions.GetCSWeaponDataFromKeyFunc = null;
+            Log.Error(
+                $"GetCSWeaponDataFromKey invocation failed. This usually means your RetakesAllocator_gamedata.json signatures are outdated. Error: {ex.Message}");
+            return HookResult.Continue;
+        }
 
         var player = hook.GetParam<CCSPlayer_ItemServices>(0).Pawn.Value.Controller.Value?.As<CCSPlayerController>();
         if (player is null || !player.IsValid || !player.PawnIsAlive)
