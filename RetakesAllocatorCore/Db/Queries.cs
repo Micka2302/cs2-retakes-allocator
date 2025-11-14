@@ -223,12 +223,23 @@ ALTER TABLE UserSettings
     MODIFY COLUMN UserId BIGINT UNSIGNED NOT NULL;
 """);
 
-        context.Database.ExecuteSqlRaw("""
-ALTER TABLE UserSettings
-    ADD COLUMN IF NOT EXISTS WeaponPreferences LONGTEXT NULL,
-    ADD COLUMN IF NOT EXISTS ZeusEnabled TINYINT(1) NOT NULL DEFAULT 0,
-    ADD COLUMN IF NOT EXISTS EnemyStuffTeamPreference INT NOT NULL DEFAULT 0;
-""");
+        context.Database.ExecuteSqlRaw(
+            MySqlColumnSqlHelper.BuildAddColumnIfMissingSql(
+                "UserSettings",
+                "WeaponPreferences",
+                "LONGTEXT NULL"));
+
+        context.Database.ExecuteSqlRaw(
+            MySqlColumnSqlHelper.BuildAddColumnIfMissingSql(
+                "UserSettings",
+                "ZeusEnabled",
+                "TINYINT(1) NOT NULL DEFAULT 0"));
+
+        context.Database.ExecuteSqlRaw(
+            MySqlColumnSqlHelper.BuildAddColumnIfMissingSql(
+                "UserSettings",
+                "EnemyStuffTeamPreference",
+                "INT NOT NULL DEFAULT 0"));
 
         SeedMigrationHistory(context);
 
